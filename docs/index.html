@@ -150,14 +150,17 @@ html{scroll-behavior:smooth}
     <h2 id="install">Install</h2>
     <p>FeatureNamer is a plain Python addon. You don't need to compile anything.</p>
     <ol class="steps">
-      <li><div>Copy the <code>FeatureNamer</code> folder into your user Mod directory. On Windows that is <code>%APPDATA%\FreeCAD\v27-1\Mod\</code>. The <code>vXX-Y</code> part matches your FreeCAD version.</div></li>
+      <li><div>Download the repository from <a href="https://github.com/avongil/FreeCAD-FeatureNamer">github.com/avongil/FreeCAD-FeatureNamer</a> (<b>Code ▸ Download ZIP</b>) and copy the <code>FeatureNamer</code> folder inside it into your user Mod directory. On Windows that is <code>%APPDATA%\FreeCAD\v27-1\Mod\</code>. The <code>vXX-Y</code> part matches your FreeCAD version.</div></li>
       <li><div>Restart FreeCAD. The addon loads from <code>InitGui.py</code> at startup and works in every workbench. It doesn't add a workbench of its own.</div></li>
       <li><div>To remove it, delete the folder.</div></li>
     </ol>
-<pre><code>FeatureNamer/
-├── InitGui.py          <span class="c"># imports the core module and calls install()</span>
-├── FeatureNamerCore.py <span class="c"># observer, name field, popup, menu toggles</span>
-└── README.md</code></pre>
+<pre><code>FreeCAD-FeatureNamer/
+├── FeatureNamer/            <span class="c"># copy this folder into Mod</span>
+│   ├── InitGui.py           <span class="c"># imports the core module and calls install()</span>
+│   └── FeatureNamerCore.py  <span class="c"># observer, name field, popup, postfixes, menu</span>
+├── docs/index.html          <span class="c"># this manual</span>
+├── README.md
+└── LICENSE</code></pre>
 
     <h2 id="use">How to use it</h2>
 

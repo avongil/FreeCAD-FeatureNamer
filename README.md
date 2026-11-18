@@ -25,7 +25,21 @@ A FreeCAD addon that lets you name Sketcher and PartDesign features in the dialo
 
 ## Install
 
-Copy this folder (as `FeatureNamer`) into your FreeCAD user Mod directory and restart FreeCAD:
+1. Click **Code > Download ZIP** on this page and unzip it.
+2. Copy the **`FeatureNamer`** folder inside it (the one with `InitGui.py`) into your FreeCAD user Mod directory.
+3. Restart FreeCAD.
+
+```
+FreeCAD-FeatureNamer/
+├── FeatureNamer/          <- copy this folder into Mod
+│   ├── InitGui.py
+│   └── FeatureNamerCore.py
+├── docs/index.html        manual (GitHub Pages)
+├── README.md
+└── LICENSE
+```
+
+Where the folder ends up:
 
 - Windows: `%APPDATA%\FreeCAD\vXX-Y\Mod\FeatureNamer`
 - Linux: `~/.local/share/FreeCAD/vXX-Y/Mod/FeatureNamer`
