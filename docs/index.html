@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>*,*::before,*::after{box-sizing:border-box}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>FeatureNamer Manual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: technical-manual column with a sticky contents rail on wide screens; mockups of the real FreeCAD panels inline */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --ink:#1b2130; --muted:#5a6375; --rule:#d9dde5;
+  --accent:#2f5bd3; --accent-soft:#e6ecfb; --namefield:#c9f27a; --namefield-ink:#1d2a05;
+  --code-bg:#eef0f4; --viewport-a:#2e3263; --viewport-b:#8a8fb5; --warn:#a15c00; --warn-soft:#fff3df;
+  --f-display:"Archivo", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", Consolas, "Courier New", monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12151d; --surface:#1a1f2a; --ink:#e6e9f0; --muted:#9aa3b5; --rule:#2c3343;
+  --accent:#86a5ff; --accent-soft:#1e2a4a; --namefield:#b5e35c; --namefield-ink:#16210a;
+  --code-bg:#20263299; --viewport-a:#22254a; --viewport-b:#5d6290; --warn:#f0b35c; --warn-soft:#2e2412; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12151d; --surface:#1a1f2a; --ink:#e6e9f0; --muted:#9aa3b5; --rule:#2c3343;
+  --accent:#86a5ff; --accent-soft:#1e2a4a; --namefield:#b5e35c; --namefield-ink:#16210a;
+  --code-bg:#20263299; --viewport-a:#22254a; --viewport-b:#5d6290; --warn:#f0b35c; --warn-soft:#2e2412; color-scheme:dark}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.6;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:200px minmax(0,1fr);gap:56px;padding-block:48px 96px}
+@media (max-width:860px){.wrap{grid-template-columns:minmax(0,1fr);gap:24px;padding-block:28px 64px}.toc{display:none}}
+.toc{position:sticky;top:calc(env(safe-area-inset-top, 0px) + 24px);align-self:start;font-size:14px}
+.toc p{font-family:var(--f-display);font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:12px;color:var(--muted);margin:0 0 10px}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:6px;counter-reset:t}
+.toc a{color:var(--muted);text-decoration:none}
+.toc a:hover,.toc a:focus-visible{color:var(--accent)}
+main{min-width:0}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(34px,5vw,52px);font-weight:800;letter-spacing:-.02em}
+h2{font-size:28px;font-weight:800;margin-top:72px;padding-top:20px;border-top:2px solid var(--ink)}
+h3{font-size:19px;font-weight:700;margin-top:32px}
+p,li{max-width:68ch}
+a{color:var(--accent)}
+.eyebrow{font-family:var(--f-mono);font-size:13px;color:var(--muted);letter-spacing:.02em}
+.lede{font-size:20px;color:var(--muted);margin:16px 0 0}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:22px;font-size:14px;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:600}
+code,kbd,pre{font-family:var(--f-mono);font-size:.86em}
+code{background:var(--code-bg);padding:1px 5px;border-radius:3px}
+kbd{border:1px solid var(--rule);border-bottom-width:2px;border-radius:4px;padding:0 6px;background:var(--surface)}
+pre{background:var(--code-bg);padding:16px 18px;border-radius:6px;overflow-x:auto;line-height:1.5;margin:16px 0}
+pre code{background:none;padding:0}
+.c{color:var(--muted)}
+
+/* mockups */
+.figure{margin:28px 0;display:grid;gap:10px}
+.figure figcaption{font-size:14px;color:var(--muted)}
+.mock{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(260px,1fr);border:1px solid var(--rule);border-radius:6px;overflow:hidden;background:var(--surface)}
+@media (max-width:640px){.mock{grid-template-columns:minmax(0,1fr)}.viewport{min-height:140px}}
+.viewport{background:linear-gradient(180deg,var(--viewport-a),var(--viewport-b));position:relative;min-height:300px}
+.viewport .part{position:absolute;left:12%;top:22%;width:62%;height:52%;border:3px solid #1c1c1c;border-radius:14px;background:#b2a82a}
+.viewport .part::after{content:"";position:absolute;inset:10px;border:2px solid #1c1c1c;border-radius:8px}
+.tasks{padding:12px;font-size:13px;display:grid;gap:10px;align-content:start;background:var(--surface)}
+.tasks .title{text-align:center;color:var(--muted)}
+.tasks .btns{display:flex;justify-content:center;gap:8px}
+.btn{border:1px solid var(--rule);border-radius:4px;padding:3px 18px;background:var(--bg);font-size:13px}
+.namebox{display:flex;align-items:center;gap:8px;border:2px solid var(--namefield);border-radius:5px;padding:6px 8px;background:var(--surface)}
+.namebox b{font-size:13px}
+.namebox .field{flex:1;min-width:0;border:1px solid var(--rule);border-radius:3px;padding:3px 8px;font-size:16px;background:var(--namefield);color:var(--namefield-ink)}
+.taskbox{border-top:1px solid var(--rule);padding-top:8px}
+.taskbox strong{display:block;margin-bottom:6px}
+.taskbox .body{color:var(--muted);height:38px;border:1px solid var(--rule);border-radius:3px;padding:4px 8px}
+.tag{display:inline-block;font-family:var(--f-mono);font-size:11px;padding:1px 6px;border-radius:3px;background:var(--accent-soft);color:var(--accent);margin-left:6px;vertical-align:1px}
+
+.dialog{max-width:380px;border:1px solid var(--rule);border-radius:6px;background:var(--surface);box-shadow:0 8px 28px rgba(0,0,0,.18);font-size:14px;overflow:hidden}
+.dialog .bar{padding:8px 12px;border-bottom:1px solid var(--rule);font-weight:600}
+.dialog .in{padding:14px 14px 12px;display:grid;gap:10px}
+.dialog .field{border:1px solid var(--accent);border-radius:3px;padding:5px 8px;font-size:17px}
+.dialog .field span{background:var(--accent-soft)}
+.dialog .btns{display:flex;justify-content:flex-end;gap:8px}
+
+/* steps */
+.steps{list-style:none;padding:0;margin:20px 0;display:grid;gap:14px;counter-reset:s}
+.steps li{counter-increment:s;display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;max-width:none}
+.steps li::before{content:counter(s);font-family:var(--f-display);font-weight:800;width:28px;height:28px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-size:14px}
+
+table{border-collapse:collapse;width:100%;font-size:15px}
+.tbl{overflow-x:auto;margin:16px 0}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-family:var(--f-display);font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700}
+td:first-child{white-space:nowrap}
+.on{color:var(--accent);font-weight:600}
+
+.note{border-left:3px solid var(--warn);background:var(--warn-soft);padding:12px 16px;margin:20px 0;border-radius:0 4px 4px 0;max-width:68ch}
+.note strong{color:var(--warn)}
+
+/* flow */
+.flow{display:grid;gap:0;margin:24px 0;max-width:720px}
+.flow .n{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;padding:12px 0;border-bottom:1px dashed var(--rule)}
+.flow .n:last-child{border-bottom:none}
+.flow .k{font-family:var(--f-mono);font-size:13px;color:var(--accent);font-weight:600;padding-top:2px}
+@media (max-width:560px){.flow .n{grid-template-columns:minmax(0,1fr);gap:2px}}
+
+.limits{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:20px 0}
+.limits div{border:1px solid var(--rule);border-radius:6px;padding:14px 16px;background:var(--surface)}
+.limits h4{margin:0 0 6px;font-family:var(--f-display);font-size:16px}
+.limits p{margin:0;font-size:15px;color:var(--muted)}
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;padding:18px;border:1px solid var(--rule);border-radius:6px;background:var(--surface)}
+.chip{font-family:var(--f-mono);font-size:15px;padding:5px 10px;border-radius:4px;background:var(--code-bg)}
+.chip b{color:var(--accent)}
+.arrow{font-size:13px;color:var(--muted)}
+.pf td:first-child{white-space:normal}
+footer{margin-top:72px;font-size:14px;color:var(--muted);border-top:1px solid var(--rule);padding-top:16px}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+html{scroll-behavior:smooth}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="toc" aria-label="Contents">
+    <p>Contents</p>
+    <ol>
+      <li><a href="#why">Why</a></li>
+      <li><a href="#install">Install</a></li>
+      <li><a href="#use">How to use it</a></li>
+      <li><a href="#auto">Automatic names</a></li>
+      <li><a href="#settings">Settings</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#limits">Limits</a></li>
+      <li><a href="#core">Proposal for core</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <div class="eyebrow">FreeCAD addon · Sketcher + PartDesign</div>
+    <h1>FeatureNamer</h1>
+    <p class="lede">Name a feature in the dialog where you create or edit it. Features built from a named feature, and their type postfixes, are named for you.</p>
+    <div class="meta">
+      <span><b>Targets</b> FreeCAD 27.1.0dev (weekly 2026.11.04)</span>
+      <span><b>Stack</b> Python 3.13 · PySide6 6.11</span>
+      <span><b>Status</b> working prototype</span>
+    </div>
+
+    <h2 id="why">Why</h2>
+    <p>The tree of a real PartDesign body soon turns into <code>Sketch007</code>, <code>Pad004</code>, <code>Pocket012</code>. A feature is easiest to name right after you create it, while you still know what it is for. But FreeCAD's task dialogs have nowhere to type a name. You have to go back to the tree, find the item, rename it, and then return to your work.</p>
+    <p>Other CAD tools, Alibre Design for example, put a name field at the top of every feature dialog. FeatureNamer adds the same thing to FreeCAD. It can also ask for a name when a feature still has its default one.</p>
+
+    <h2 id="install">Install</h2>
+    <p>FeatureNamer is a plain Python addon. You don't need to compile anything.</p>
+    <ol class="steps">
+      <li><div>Copy the <code>FeatureNamer</code> folder into your user Mod directory. On Windows that is <code>%APPDATA%\FreeCAD\v27-1\Mod\</code>. The <code>vXX-Y</code> part matches your FreeCAD version.</div></li>
+      <li><div>Restart FreeCAD. The addon loads from <code>InitGui.py</code> at startup and works in every workbench. It doesn't add a workbench of its own.</div></li>
+      <li><div>To remove it, delete the folder.</div></li>
+    </ol>
+<pre><code>FeatureNamer/
+├── InitGui.py          <span class="c"># imports the core module and calls install()</span>
+├── FeatureNamerCore.py <span class="c"># observer, name field, popup, menu toggles</span>
+└── README.md</code></pre>
+
+    <h2 id="use">How to use it</h2>
+
+    <h3>Creating a feature</h3>
+    <p>Create a Sketch, Pad, Pocket, Fillet, Hole or any other PartDesign feature as usual. If the feature still has its default name when the edit dialog opens, a small dialog asks for one. The current name is already selected, so you can just start typing.</p>
+    <figure class="figure">
+      <div class="dialog" role="img" aria-label="Mockup of the name popup">
+        <div class="bar">Name feature</div>
+        <div class="in">
+          <div>Name for this <b>Sketch</b>:</div>
+          <div class="field"><span>Sketch003</span></div>
+          <div class="btns"><span class="btn">OK</span><span class="btn">Skip</span></div>
+        </div>
+      </div>
+      <figcaption>Type a name and press <kbd>Enter</kbd>. Press <kbd>Esc</kbd> or click <b>Skip</b> to keep the default. Each feature is asked once per session.</figcaption>
+    </figure>
+
+    <h3>The name field</h3>
+    <p>While a Sketch or PartDesign feature is in edit mode, a <b>Name</b> field sits at the top of the Tasks panel, above the feature's own settings.</p>
+    <figure class="figure">
+      <div class="mock" role="img" aria-label="Mockup of the Tasks panel with the name field at the top">
+        <div class="viewport"><div class="part"></div></div>
+        <div class="tasks">
+          <div class="title">Tasks</div>
+          <div class="btns"><span class="btn">OK</span><span class="btn">Cancel</span></div>
+          <div class="namebox"><b>Name:</b><span class="field">Lid screw bosses</span></div>
+          <div class="taskbox"><strong>Sketch Edit</strong><div class="body">Empty sketch</div></div>
+          <div class="taskbox"><strong>Constraints</strong><div class="body"></div></div>
+        </div>
+      </div>
+      <figcaption>The field is added at the top of the existing panel. The feature's own task boxes stay the same.</figcaption>
+    </figure>
+    <ul>
+      <li><b>Live rename.</b> The model tree updates as you type.</li>
+      <li><b><kbd>Enter</kbd> finishes.</b> It confirms the name and returns focus to the 3D view, so Sketcher keyboard shortcuts work again straight away.</li>
+      <li><b>Cancel reverts.</b> The rename is part of the open edit transaction, so <b>Cancel</b> undoes it and one <kbd>Ctrl</kbd>+<kbd>Z</kbd> undoes the feature and its name together.</li>
+      <li><b>Works on existing features.</b> Double-click any feature in the tree and the field is there, so you can rename it whenever you like.</li>
+    </ul>
+
+    <h3 id="auto">Automatic names</h3>
+    <p>Most features are built from another feature. When that feature already has a name, FeatureNamer names the new one for you and doesn't show the popup.</p>
+    <figure class="figure">
+      <div class="chain" role="img" aria-label="Name chain from sketch to pad to fillet">
+        <span class="chip">OutsideMoat<b>_SKT</b></span><span class="arrow">Pad →</span>
+        <span class="chip">OutsideMoat<b>_PAD</b></span><span class="arrow">Fillet →</span>
+        <span class="chip">OutsideMoat<b>_FIL</b></span>
+      </div>
+      <figcaption>The base name carries forward and only the postfix changes. A Pocket started from a face of <code>Lid_PAD</code> becomes <code>Lid_PKT</code>.</figcaption>
+    </figure>
+    <ul>
+      <li><b>Postfix.</b> When you name a feature yourself, in the popup or the Name field, its type postfix is added for you. Typing <code>OutsideMoat</code> for a sketch gives <code>OutsideMoat_SKT</code>. If you already typed the postfix, it isn't added twice.</li>
+      <li><b>Source feature.</b> FeatureNamer takes the name from <code>Profile</code> (Pad, Pocket, Revolution, Groove, Hole, Sweep, Loft, Helix), from <code>Base</code> (Fillet, Chamfer, Draft, Thickness), or from <code>Originals</code> (patterns and Mirrored).</li>
+      <li><b>When it still asks.</b> If the source feature still has a default name, such as a Pad from <code>Sketch004</code>, you get the popup as usual. New sketches always ask, because a sketch on a face usually starts something new.</li>
+      <li><b>Patterns opened with nothing selected.</b> The name is filled in as soon as you pick the feature to pattern. If you close the dialog without picking one, you're asked for a name then.</li>
+    </ul>
+    <p>To change postfixes, use <b>Tools ▸ FeatureNamer: edit postfixes…</b>. It opens a table of feature types and their postfixes, where you can edit, add or remove rows, or reset everything to the defaults.</p>
+    <div class="tbl"><table class="pf">
+      <thead><tr><th>Feature</th><th>Postfix</th><th>Feature</th><th>Postfix</th></tr></thead>
+      <tbody>
+        <tr><td>Sketch</td><td><code>_SKT</code></td><td>Fillet</td><td><code>_FIL</code></td></tr>
+        <tr><td>Pad</td><td><code>_PAD</code></td><td>Chamfer</td><td><code>_CHF</code></td></tr>
+        <tr><td>Pocket</td><td><code>_PKT</code></td><td>Draft</td><td><code>_DFT</code></td></tr>
+        <tr><td>Revolution</td><td><code>_REV</code></td><td>Thickness</td><td><code>_SHL</code></td></tr>
+        <tr><td>Groove</td><td><code>_GRV</code></td><td>Mirrored</td><td><code>_MIR</code></td></tr>
+        <tr><td>Hole</td><td><code>_HOLE</code></td><td>Linear pattern</td><td><code>_LPAT</code></td></tr>
+        <tr><td>Additive / subtractive pipe (Sweep)</td><td><code>_SWP</code> / <code>_SSWP</code></td><td>Polar pattern</td><td><code>_PPAT</code></td></tr>
+        <tr><td>Additive / subtractive loft</td><td><code>_LOFT</code> / <code>_SLOFT</code></td><td>MultiTransform</td><td><code>_MTR</code></td></tr>
+        <tr><td>Additive / subtractive helix</td><td><code>_HLX</code> / <code>_SHLX</code></td><td>Boolean</td><td><code>_BOOL</code></td></tr>
+        <tr><td>Datum plane / line / point</td><td><code>_PLN</code> / <code>_AXS</code> / <code>_PNT</code></td><td>Shape binder</td><td><code>_BND</code></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 id="settings">Settings</h2>
+    <p>Each behavior can be switched on or off from the <b>Tools</b> menu, right below <i>Edit parameters…</i>. The settings are saved under <code>BaseApp/Preferences/Mod/FeatureNamer</code>.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Parameter</th><th>Default</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td><code>ShowNameField</code></td><td class="on">on</td><td>Show the Name field at the top of the Tasks panel.</td></tr>
+        <tr><td><code>PromptIfUnnamed</code></td><td class="on">on</td><td>Show the popup when editing starts on a feature with a default name.</td></tr>
+        <tr><td><code>NameFromBase</code></td><td class="on">on</td><td>Name a feature after the feature it is built from, such as <code>Moat_SKT</code> → <code>Moat_PAD</code>, without asking.</td></tr>
+        <tr><td><code>AutoPostfix</code></td><td class="on">on</td><td>Add the type postfix to names you type.</td></tr>
+        <tr><td><code>Postfixes</code></td><td>see table</td><td>One <code>TypeId=postfix</code> pair per line. Edit them with <i>FeatureNamer: edit postfixes…</i>.</td></tr>
+        <tr><td><code>FocusNameField</code></td><td>off</td><td>Put the cursor in the Name field instead of showing a popup. This is the less intrusive option. It only applies while <code>PromptIfUnnamed</code> is off.</td></tr>
+        <tr><td><code>AskOnClose</code></td><td>off</td><td>After <b>OK</b>, ask once more if the name is still the default. This rename gets its own undo step.</td></tr>
+        <tr><td><code>ExcludeTypes</code></td><td><code>PartDesign::Body</code></td><td>Comma-separated list of TypeIds to ignore, for example <code>PartDesign::Plane</code>.</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 id="how">How it works</h2>
+    <p>The addon uses only public FreeCAD Python APIs and reads one internal Qt class name. It doesn't patch any FreeCAD code.</p>
+
+    <div class="flow">
+      <div class="n"><div class="k">startup</div><div><code>InitGui.py</code> registers a <b>Gui document observer</b>, four checkable commands, and a <b>workbench manipulator</b> that adds those commands to the Tools menu after <code>Std_DlgParameter</code>.</div></div>
+      <div class="n"><div class="k">slotInEdit(vp)</div><div>Runs whenever a view provider enters edit mode. If <code>vp.Object.TypeId</code> starts with <code>Sketcher::</code> or <code>PartDesign::</code> and isn't excluded, that object becomes the current target. The rest of the work is deferred with <code>QTimer.singleShot(0)</code> so <code>setEdit()</code> can finish building its task dialog first.</div></div>
+      <div class="n"><div class="k">inject</div><div>Finds the visible <code>Gui::TaskView::TaskPanel</code> widget and inserts a <code>NameBox</code> frame at index 0 of its <code>QBoxLayout</code>, above the dialog's first task box.</div></div>
+      <div class="n"><div class="k">derive</div><div>If the label is still the default, it finds the feature's source through <code>Profile</code>, <code>Base</code> (dress-up features only) or <code>Originals</code>. If the source has a real name, it removes the source's postfix and adds the new feature's postfix, so <code>OutsideMoat_SKT</code> becomes <code>OutsideMoat_PAD</code>. If the feature has no source yet, the watchdog keeps checking until one is picked.</div></div>
+      <div class="n"><div class="k">prompt</div><div>If the label is still the default and the object hasn't been asked about yet, it shows a modal <code>NameDialog</code> and sets <code>obj.Label</code>. This happens inside the edit transaction.</div></div>
+      <div class="n"><div class="k">watchdog</div><div>A 400&nbsp;ms timer runs only while editing. It adds the field back if the dialog rebuilds its panel, and cleans up if the edit ends without a reset signal.</div></div>
+      <div class="n"><div class="k">slotResetEdit(vp)</div><div>Removes the field and stops the timer. If <code>AskOnClose</code> is on, it checks <code>doc.getObject(name) is obj</code> to see whether the feature survived (Cancel deletes new features) and asks again inside its own transaction.</div></div>
+    </div>
+
+    <h3>Detecting a default name</h3>
+    <p>A label counts as default if it equals the internal <code>Name</code>, or if it is the name's alphabetic part followed only by digits. So a new <code>Pad003</code> labelled <code>Pad003</code>, or <code>Pad</code> after a copy, counts as unnamed. <code>Pad base plate</code> doesn't.</p>
+<pre><code>def _is_default_label(obj):
+    label, name = obj.Label, obj.Name
+    if label == name:
+        return True
+    base = re.sub(r"\d+$", "", name)            <span class="c"># "Pad003" -&gt; "Pad"</span>
+    return re.fullmatch(re.escape(base) + r"\d*", label) is not None</code></pre>
+
+    <h3>Finding the task panel</h3>
+<pre><code>for w in Gui.getMainWindow().findChildren(QtWidgets.QWidget):
+    if w.metaObject().className() == "Gui::TaskView::TaskPanel" and w.isVisible():
+        w.layout().insertWidget(0, NameBox(obj, w))</code></pre>
+    <p>Because the field writes to <code>Label</code> on every <code>textEdited</code> signal, the rename joins whatever transaction the task dialog has open. That is why Cancel and Undo treat it as part of the feature.</p>
+
+    <h2 id="limits">Known limits</h2>
+    <div class="limits">
+      <div><h4>Relies on an internal class name</h4><p>The field depends on <code>Gui::TaskView::TaskPanel</code> having a box layout. If the task view is restructured, the field won't appear, but nothing else breaks.</p></div>
+      <div><h4>Only covers features opened in edit mode</h4><p>The addon only sees objects that enter edit mode through <code>setEdit()</code>. Dialogs that aren't tied to an object being edited, such as Part ▸ Extrude, aren't covered.</p></div>
+      <div><h4>Keyboard focus</h4><p>While the Name field has focus, single-key Sketcher shortcuts type into it. <kbd>Enter</kbd> hands focus back to the 3D view, which is why <code>FocusNameField</code> is off by default.</p></div>
+      <div><h4>Duplicate labels</h4><p>If duplicate labels aren't allowed, FreeCAD adds a suffix to the label. The field shows the final label once you finish editing.</p></div>
+      <div><h4>Widget search cost</h4><p><code>findChildren</code> walks the whole main-window widget tree on each watchdog tick. This hasn't been noticeable, but it isn't free.</p></div>
+      <div><h4>No translation</h4><p>The interface text is English only. Default-name detection uses the internal <code>Name</code>, which isn't translated, so it works in any language.</p></div>
+    </div>
+
+    <h2 id="core">Proposal for core</h2>
+    <p>Most of the addon's code exists to work around the lack of a hook. In core, the feature could be small and robust:</p>
+    <ul>
+      <li><b>A label row on <code>Gui::TaskView::TaskDialog</code>.</b> Add an optional header showing the edited object's <code>Label</code>, on by default for dialogs opened from <code>ViewProvider::setEdit()</code>. Every PartDesign and Sketcher dialog would get it without per-dialog changes.</li>
+      <li><b>A preference</b> under <i>General ▸ Document</i>: "Ask for a name when creating features", off by default.</li>
+      <li><b>A Python hook</b> such as <code>TaskDialog.addHeaderWidget()</code>, so addons can extend a task dialog without searching the widget tree by class name.</li>
+    </ul>
+    <p>FeatureNamer can serve as the reference prototype for testing the behavior before any C++ is written.</p>
+
+    <footer>FeatureNamer · prototype addon · Settings path <code>BaseApp/Preferences/Mod/FeatureNamer</code></footer>
+  </main>
+</div>
+</body>
+</html>
