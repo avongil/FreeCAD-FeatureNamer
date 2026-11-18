@@ -9,8 +9,8 @@ A FreeCAD addon that lets you name Sketcher and PartDesign features in the dialo
 - Adds a **Name** field at the top of the Tasks panel while a Sketch or PartDesign feature is being edited. Typing renames the feature live, and Cancel / Ctrl+Z undo it together with the feature.
 - When a feature still has its default name (`Sketch003`, `Pad001`, ...), it pops up a small dialog asking for a name. The field starts empty (the default name shows greyed out), so you just type and press Enter.
 - Features built from an already named feature are named automatically, without a popup: a Pad from `OutsideMoat_SKT` becomes `OutsideMoat_PAD`, and a Fillet on that becomes `OutsideMoat_FIL`. The name comes from `Profile`, `Base` (dress-up features) or `Originals` (patterns).
-- A type postfix is added to names you type: `OutsideMoat` for a sketch becomes `OutsideMoat_SKT`. Defaults include `_SKT` Sketch, `_PAD` Pad, `_PKT` Pocket, `_REV` Revolution, `_GRV` Groove, `_HOLE` Hole, `_SWP` Sweep (additive pipe), `_LOFT` Loft, `_FIL` Fillet, `_CHF` Chamfer, `_MIR` Mirrored, `_LPAT` / `_PPAT` patterns. Edit them in **Tools > FeatureNamer: edit postfixes...**
-- Each behavior can be switched on or off from the **Tools** menu (below *Edit parameters...*). Settings live in `BaseApp/Preferences/Mod/FeatureNamer`.
+- A type postfix is added to names you type: `OutsideMoat` for a sketch becomes `OutsideMoat_SKT`. Defaults include `_SKT` Sketch, `_PAD` Pad, `_PKT` Pocket, `_REV` Revolution, `_GRV` Groove, `_HOLE` Hole, `_SWP` Sweep (additive pipe), `_LOFT` Loft, `_FIL` Fillet, `_CHF` Chamfer, `_MIR` Mirrored, `_LPAT` / `_PPAT` patterns. Edit them in **Tools > FeatureNamer settings...**
+- All options are in one dialog: **Tools > FeatureNamer settings...** (green tag icon, below *Edit Parameters*). Settings live in `BaseApp/Preferences/Mod/FeatureNamer`.
 
 | Parameter | Default | Effect |
 |---|---|---|
@@ -20,7 +20,7 @@ A FreeCAD addon that lets you name Sketcher and PartDesign features in the dialo
 | `AutoPostfix` | on | Add the type postfix to names |
 | `Postfixes` | see above | One `TypeId=postfix` per line |
 | `FocusNameField` | off | Put the cursor in the Name field instead of a popup |
-| `AskOnClose` | off | Ask after OK if the name is still the default |
+| `AskOnClose` | off | Ask again after OK if the name is still the default, even if you skipped the first popup |
 | `ExcludeTypes` | `PartDesign::Body` | Comma-separated TypeIds to ignore |
 
 ## Install
@@ -33,7 +33,8 @@ A FreeCAD addon that lets you name Sketcher and PartDesign features in the dialo
 FreeCAD-FeatureNamer/
 ├── FeatureNamer/          <- copy this folder into Mod
 │   ├── InitGui.py
-│   └── FeatureNamerCore.py
+│   ├── FeatureNamerCore.py
+│   └── Resources/FeatureNamer.svg
 ├── docs/index.html        manual (GitHub Pages)
 ├── README.md
 └── LICENSE

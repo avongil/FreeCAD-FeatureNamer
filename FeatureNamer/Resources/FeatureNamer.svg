@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="tag" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c9f27a"/>
+      <stop offset="1" stop-color="#7fb81e"/>
+    </linearGradient>
+    <linearGradient id="box" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#729fcf"/>
+      <stop offset="1" stop-color="#204a87"/>
+    </linearGradient>
+  </defs>
+  <!-- part / feature block -->
+  <path d="M6 22 L22 14 L38 22 L38 42 L22 50 L6 42 Z" fill="url(#box)" stroke="#0b1e3a" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M6 22 L22 30 L38 22 M22 30 L22 50" fill="none" stroke="#0b1e3a" stroke-width="2" stroke-linejoin="round"/>
+  <!-- name tag -->
+  <path d="M26 30 L52 30 Q60 30 60 38 L60 50 Q60 58 52 58 L26 58 L18 44 Z" fill="url(#tag)" stroke="#2c3e05" stroke-width="2.5" stroke-linejoin="round"/>
+  <circle cx="26" cy="44" r="3" fill="#ffffff" stroke="#2c3e05" stroke-width="1.5"/>
+  <!-- text lines + cursor -->
+  <path d="M34 40 H50 M34 48 H44" stroke="#2c3e05" stroke-width="3" stroke-linecap="round"/>
+  <path d="M54 36 V52" stroke="#2c3e05" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

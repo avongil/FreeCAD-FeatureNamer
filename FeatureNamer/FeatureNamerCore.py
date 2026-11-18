@@ -9,13 +9,14 @@
 #    OutsideMoat_SKT -> Pad -> OutsideMoat_PAD (no popup).
 #  * Auto postfix per feature type (_SKT, _PAD, _SWP, ...), editable.
 #
-# Settings: Tools menu -> "FeatureNamer: ..." entries, or
+# Settings: Tools menu -> "FeatureNamer settings...", or
 #   Tools > Edit parameters > BaseApp/Preferences/Mod/FeatureNamer
 
+import os
 import re
 import FreeCAD as App
 import FreeCADGui as Gui
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 try:
     import shiboken6
@@ -41,7 +42,7 @@ DEFAULTS_STR = {
     "ExcludeTypes": "PartDesign::Body",   # comma separated TypeIds to ignore
 }
 
-# TypeId -> postfix. Editable via Tools > "FeatureNamer: edit postfixes...".
+# TypeId -> postfix. Editable in Tools > FeatureNamer settings....
 DEFAULT_POSTFIXES = [
     ("Sketcher::SketchObject", "_SKT"),
     ("PartDesign::Pad", "_PAD"),
@@ -293,42 +294,81 @@ def prompt_for_name(obj, own_transaction=False):
 
 
 # --------------------------------------------------------------------------
-# postfix editor
+# settings dialog (Tools > FeatureNamer settings...)
 
-class PostfixDialog(QtWidgets.QDialog):
+ICON_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Resources", "FeatureNamer.svg")
+
+
+class SettingsDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("FeatureNamer postfixes")
-        self.resize(460, 560)
+        self.setWindowTitle("FeatureNamer settings")
+        self.setWindowIcon(QtGui.QIcon(ICON_PATH))
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+        self.resize(520, 680)
         lay = QtWidgets.QVBoxLayout(self)
-        self.auto = QtWidgets.QCheckBox("Add postfix automatically when naming")
-        self.auto.setChecked(pref("AutoPostfix"))
-        self.derive = QtWidgets.QCheckBox("Name features after the feature they are built from")
-        self.derive.setChecked(pref("NameFromBase"))
-        lay.addWidget(self.auto)
-        lay.addWidget(self.derive)
+
+        # --- asking for names
+        g1 = QtWidgets.QGroupBox("Naming features")
+        l1 = QtWidgets.QVBoxLayout(g1)
+        self.cb = {}
+
+        def add(layout, key, text, tip):
+            c = QtWidgets.QCheckBox(text)
+            c.setToolTip(tip)
+            c.setChecked(pref(key))
+            layout.addWidget(c)
+            self.cb[key] = c
+            return c
+
+        add(l1, "ShowNameField", "Show a Name field at the top of the Tasks panel",
+            "While a Sketch or PartDesign feature is being edited.")
+        ask = add(l1, "PromptIfUnnamed", "Ask for a name when editing an unnamed feature",
+                  "Pops up when the feature still has its default name (Sketch001, Pad002...).")
+        focus = add(l1, "FocusNameField", "Instead, put the cursor in the Name field",
+                    "Quieter alternative to the popup. Only used when the popup is off.")
+        focus.setStyleSheet("margin-left:20px")
+        add(l1, "AskOnClose", "Ask again after OK if the feature is still unnamed",
+            "Also asks if you skipped the first popup.")
+        focus.setEnabled(not ask.isChecked())
+        ask.toggled.connect(lambda on: focus.setEnabled(not on))
+        lay.addWidget(g1)
+
+        # --- automatic names
+        g2 = QtWidgets.QGroupBox("Automatic names")
+        l2 = QtWidgets.QVBoxLayout(g2)
+        add(l2, "NameFromBase", "Name features after the feature they are built from",
+            "A Pad from OutsideMoat_SKT becomes OutsideMoat_PAD without asking.")
+        add(l2, "AutoPostfix", "Add the type postfix to names (_SKT, _PAD, ...)",
+            "Typing OutsideMoat for a sketch gives OutsideMoat_SKT.")
         self.table = QtWidgets.QTableWidget(0, 2)
         self.table.setHorizontalHeaderLabels(["Feature type (TypeId)", "Postfix"])
         self.table.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
         self.table.verticalHeader().setVisible(False)
-        lay.addWidget(self.table, 1)
+        l2.addWidget(self.table, 1)
         self._fill(load_postfixes())
         row = QtWidgets.QHBoxLayout()
-        add = QtWidgets.QPushButton("Add row")
-        rem = QtWidgets.QPushButton("Remove row")
-        reset = QtWidgets.QPushButton("Reset to defaults")
-        add.clicked.connect(self._add)
-        rem.clicked.connect(self._remove)
-        reset.clicked.connect(lambda: self._fill(DEFAULT_POSTFIXES))
-        for b in (add, rem, reset):
+        for text, fn in (("Add row", lambda: self._add()), ("Remove row", self._remove),
+                         ("Reset to defaults", lambda: self._fill(DEFAULT_POSTFIXES))):
+            b = QtWidgets.QPushButton(text)
+            b.clicked.connect(fn)
             row.addWidget(b)
         row.addStretch(1)
-        lay.addLayout(row)
-        tip = QtWidgets.QLabel("Tip: select a feature and run <code>Gui.Selection.getSelection()[0].TypeId</code> "
-                               "in the Python console to find a type you want to add.")
+        l2.addLayout(row)
+        tip = QtWidgets.QLabel("To find a TypeId, select the feature and run "
+                               "<code>Gui.Selection.getSelection()[0].TypeId</code> in the Python console.")
         tip.setWordWrap(True)
         tip.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-        lay.addWidget(tip)
+        l2.addWidget(tip)
+        lay.addWidget(g2, 1)
+
+        # --- exclusions
+        g3 = QtWidgets.QGroupBox("Ignore these feature types (comma separated TypeIds)")
+        l3 = QtWidgets.QVBoxLayout(g3)
+        self.exclude = QtWidgets.QLineEdit(params().GetString("ExcludeTypes", ""))
+        l3.addWidget(self.exclude)
+        lay.addWidget(g3)
+
         bb = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Save | QtWidgets.QDialogButtonBox.Cancel)
         bb.accepted.connect(self._save)
         bb.rejected.connect(self.reject)
@@ -342,14 +382,14 @@ class PostfixDialog(QtWidgets.QDialog):
     def _add(self, t="", pf=""):
         r = self.table.rowCount()
         self.table.insertRow(r)
-        self.table.setItem(r, 0, QtWidgets.QTableWidgetItem(t if isinstance(t, str) else ""))
-        self.table.setItem(r, 1, QtWidgets.QTableWidgetItem(pf if isinstance(pf, str) else ""))
+        self.table.setItem(r, 0, QtWidgets.QTableWidgetItem(t))
+        self.table.setItem(r, 1, QtWidgets.QTableWidgetItem(pf))
         if not t:
+            self.table.scrollToBottom()
             self.table.editItem(self.table.item(r, 0))
 
     def _remove(self):
-        rows = sorted({i.row() for i in self.table.selectedIndexes()}, reverse=True)
-        for r in rows:
+        for r in sorted({i.row() for i in self.table.selectedIndexes()}, reverse=True):
             self.table.removeRow(r)
 
     def _save(self):
@@ -360,8 +400,11 @@ class PostfixDialog(QtWidgets.QDialog):
             if t:
                 pairs.append((t, pf))
         save_postfixes(pairs)
-        params().SetBool("AutoPostfix", self.auto.isChecked())
-        params().SetBool("NameFromBase", self.derive.isChecked())
+        for key, c in self.cb.items():
+            params().SetBool(key, c.isChecked())
+        params().SetString("ExcludeTypes", self.exclude.text().strip())
+        if not pref("ShowNameField"):
+            _remove_boxes()
         self.accept()
 
 
@@ -456,7 +499,8 @@ class Controller(QtCore.QObject):
     def __init__(self):
         super().__init__()
         self.current = None
-        self.asked = set()
+        self.asked = set()        # popup shown when entering edit
+        self.asked_close = set()  # popup shown after OK
         self.focused_once = False
         self.waiting_for_base = False
         self.timer = QtCore.QTimer(self)
@@ -478,18 +522,22 @@ class Controller(QtCore.QObject):
 
     def slotResetEdit(self, vp):
         try:
-            obj = getattr(vp, "Object", None)
-            if obj is not None and obj is not self.current:
-                return
-            waiting = self.waiting_for_base
-            self.timer.stop()
-            _remove_boxes()
-            self.current = None
-            self.waiting_for_base = False
-            if obj is not None and (waiting or pref("AskOnClose")):
-                QtCore.QTimer.singleShot(0, lambda o=obj, w=waiting: self._after_close(o, w))
+            self._edit_ended(getattr(vp, "Object", None))
         except Exception:
             _log_error("slotResetEdit")
+
+    def _edit_ended(self, obj=None):
+        """Called by slotResetEdit or by the watchdog, whichever sees it first."""
+        cur = self.current
+        if cur is None or (obj is not None and obj is not cur):
+            return
+        waiting = self.waiting_for_base
+        self.timer.stop()
+        _remove_boxes()
+        self.current = None
+        self.waiting_for_base = False
+        if waiting or pref("AskOnClose"):
+            QtCore.QTimer.singleShot(0, lambda o=cur, w=waiting: self._after_close(o, w))
 
     # --- logic
     def _try_derive(self, obj, own_transaction=False):
@@ -500,6 +548,7 @@ class Controller(QtCore.QObject):
         if name:
             set_label(obj, name, own_transaction)
             self.asked.add(_key(obj))
+            self.asked_close.add(_key(obj))
             return True
         return False
 
@@ -528,12 +577,15 @@ class Controller(QtCore.QObject):
 
     def _after_close(self, obj, waiting):
         try:
-            if not _obj_alive(obj) or not _is_default_label(obj) or _key(obj) in self.asked:
+            # Skipping the first popup does not stop this one: asking again
+            # after OK is the whole point of AskOnClose.
+            if not _obj_alive(obj) or not _is_default_label(obj) or _key(obj) in self.asked_close:
                 return
             if self._try_derive(obj, own_transaction=True):
                 return
             if (waiting and pref("PromptIfUnnamed")) or pref("AskOnClose"):
                 self.asked.add(_key(obj))
+                self.asked_close.add(_key(obj))
                 prompt_for_name(obj, own_transaction=True)
         except Exception:
             _log_error("after close")
@@ -544,9 +596,7 @@ class Controller(QtCore.QObject):
             gdoc = Gui.getDocument(obj.Document.Name) if obj is not None and _obj_alive(obj) else None
             vp = gdoc.getInEdit() if gdoc else None
             if vp is None or getattr(vp, "Object", None) is not obj:
-                self.timer.stop()
-                _remove_boxes()
-                self.current = None
+                self._edit_ended(obj)
                 return
             if self.waiting_for_base and _is_default_label(obj) and self._try_derive(obj):
                 self.waiting_for_base = False
@@ -581,45 +631,19 @@ class Controller(QtCore.QObject):
 
 
 # --------------------------------------------------------------------------
-# Tools menu entries
+# Tools menu entry
 
-_TOGGLES = [
-    ("FeatureNamer_ShowNameField", "ShowNameField", "FeatureNamer: name field in task panel"),
-    ("FeatureNamer_PromptIfUnnamed", "PromptIfUnnamed", "FeatureNamer: ask for name when unnamed"),
-    ("FeatureNamer_NameFromBase", "NameFromBase", "FeatureNamer: name from base feature"),
-    ("FeatureNamer_AutoPostfix", "AutoPostfix", "FeatureNamer: add type postfix (_SKT, _PAD...)"),
-    ("FeatureNamer_FocusNameField", "FocusNameField", "FeatureNamer: focus name field when unnamed"),
-    ("FeatureNamer_AskOnClose", "AskOnClose", "FeatureNamer: ask for name after OK if unnamed"),
-]
-_EDIT_CMD = "FeatureNamer_EditPostfixes"
+_SETTINGS_CMD = "FeatureNamer_Settings"
 
 
-class _ToggleCmd:
-    def __init__(self, key, text):
-        self.key, self.text = key, text
-
+class _SettingsCmd:
     def GetResources(self):
-        return {"MenuText": self.text, "ToolTip": self.text,
-                "Checkable": pref(self.key)}
-
-    def Activated(self, checked=None):
-        if checked is None:
-            checked = not pref(self.key)
-        params().SetBool(self.key, bool(checked))
-        if self.key == "ShowNameField" and not checked:
-            _remove_boxes()
-
-    def IsActive(self):
-        return True
-
-
-class _EditPostfixesCmd:
-    def GetResources(self):
-        return {"MenuText": "FeatureNamer: edit postfixes...",
-                "ToolTip": "Edit the postfix added to each feature type"}
+        return {"Pixmap": ICON_PATH,
+                "MenuText": "FeatureNamer settings...",
+                "ToolTip": "Feature naming: name field, name popups, automatic names and postfixes"}
 
     def Activated(self):
-        PostfixDialog(Gui.getMainWindow()).exec()
+        SettingsDialog(Gui.getMainWindow()).exec()
 
     def IsActive(self):
         return True
@@ -627,8 +651,7 @@ class _EditPostfixesCmd:
 
 class _Manipulator:
     def modifyMenuBar(self):
-        cmds = [c for c, _, _ in _TOGGLES] + [_EDIT_CMD]
-        return [{"append": c, "menuItem": "Std_DlgParameter"} for c in reversed(cmds)]
+        return [{"append": _SETTINGS_CMD, "menuItem": "Std_DlgParameter"}]
 
 
 # --------------------------------------------------------------------------
@@ -644,9 +667,7 @@ def install():
         _ensure_defaults()
         _controller = Controller()
         Gui.addDocumentObserver(_controller)
-        for cmd, key, text in _TOGGLES:
-            Gui.addCommand(cmd, _ToggleCmd(key, text))
-        Gui.addCommand(_EDIT_CMD, _EditPostfixesCmd())
+        Gui.addCommand(_SETTINGS_CMD, _SettingsCmd())
         try:
             Gui.addWorkbenchManipulator(_Manipulator())
         except Exception:
