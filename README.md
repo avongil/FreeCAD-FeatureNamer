@@ -26,25 +26,27 @@ A FreeCAD addon that lets you name Sketcher and PartDesign features in the dialo
 ## Install
 
 1. Click **Code > Download ZIP** on this page and unzip it.
-2. Copy the **`FeatureNamer`** folder inside it (the one with `InitGui.py`) into your FreeCAD user Mod directory.
+2. Copy the **`FeatureNamer`** folder from the ZIP (the one with `InitGui.py`) into the `Mod` folder of your FreeCAD user folder, so it ends up like this:
+
+   ```
+   <your FreeCAD user folder>/
+   └── Mod/
+       └── FeatureNamer/            <- the folder you copied
+           ├── InitGui.py
+           ├── FeatureNamerCore.py
+           └── Resources/
+               └── FeatureNamer.svg
+   ```
+
 3. Restart FreeCAD.
 
-```
-FreeCAD-FeatureNamer/
-├── FeatureNamer/          <- copy this folder into Mod
-│   ├── InitGui.py
-│   ├── FeatureNamerCore.py
-│   └── Resources/FeatureNamer.svg
-├── docs/index.html        manual (GitHub Pages)
-├── README.md
-└── LICENSE
-```
+**Where is my FreeCAD user folder?** In FreeCAD, open *View > Panels > Python console* and type `App.getUserAppDataDir()`. It prints the path. Usually it is:
 
-Where the folder ends up:
+- Windows: `%APPDATA%\FreeCAD\vXX-Y` (for example `C:\Users\<you>\AppData\Roaming\FreeCAD\v1-1`)
+- Linux: `~/.local/share/FreeCAD/vXX-Y`
+- macOS: `~/Library/Application Support/FreeCAD/vXX-Y`
 
-- Windows: `%APPDATA%\FreeCAD\vXX-Y\Mod\FeatureNamer`
-- Linux: `~/.local/share/FreeCAD/vXX-Y/Mod/FeatureNamer`
-- macOS: `~/Library/Application Support/FreeCAD/vXX-Y/Mod/FeatureNamer`
+`vXX-Y` is your FreeCAD version. If there is no `Mod` folder yet, create it.
 
 Built against FreeCAD 27.1.0dev (weekly 2026.11.04), Python 3.13, PySide6 6.11.
 

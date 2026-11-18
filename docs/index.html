@@ -150,18 +150,19 @@ html{scroll-behavior:smooth}
     <h2 id="install">Install</h2>
     <p>FeatureNamer is a plain Python addon. You don't need to compile anything.</p>
     <ol class="steps">
-      <li><div>Download the repository from <a href="https://github.com/avongil/FreeCAD-FeatureNamer">github.com/avongil/FreeCAD-FeatureNamer</a> (<b>Code ▸ Download ZIP</b>) and copy the <code>FeatureNamer</code> folder inside it into your user Mod directory. On Windows that is <code>%APPDATA%\FreeCAD\v27-1\Mod\</code>. The <code>vXX-Y</code> part matches your FreeCAD version.</div></li>
+      <li><div>Download the repository from <a href="https://github.com/avongil/FreeCAD-FeatureNamer">github.com/avongil/FreeCAD-FeatureNamer</a> (<b>Code ▸ Download ZIP</b>) and copy the <code>FeatureNamer</code> folder inside it into the <code>Mod</code> folder of your FreeCAD user folder. On Windows that is <code>%APPDATA%\FreeCAD\v27-1\Mod\</code>. The <code>vXX-Y</code> part matches your FreeCAD version.</div></li>
       <li><div>Restart FreeCAD. The addon loads from <code>InitGui.py</code> at startup and works in every workbench. It doesn't add a workbench of its own.</div></li>
       <li><div>To remove it, delete the folder.</div></li>
     </ol>
-<pre><code>FreeCAD-FeatureNamer/
-├── FeatureNamer/            <span class="c"># copy this folder into Mod</span>
-│   ├── InitGui.py           <span class="c"># imports the core module and calls install()</span>
-│   ├── FeatureNamerCore.py  <span class="c"># observer, name field, popup, postfixes, settings</span>
-│   └── Resources/FeatureNamer.svg  <span class="c"># menu icon</span>
-├── docs/index.html          <span class="c"># this manual</span>
-├── README.md
-└── LICENSE</code></pre>
+    <p>After copying, your FreeCAD user folder looks like this:</p>
+<pre><code>&lt;your FreeCAD user folder&gt;/
+└── Mod/
+    └── FeatureNamer/              <span class="c"># the folder you copied</span>
+        ├── InitGui.py             <span class="c"># imports the core module and calls install()</span>
+        ├── FeatureNamerCore.py    <span class="c"># observer, name field, popup, postfixes, settings</span>
+        └── Resources/
+            └── FeatureNamer.svg   <span class="c"># menu icon</span></code></pre>
+    <p><b>Where is my FreeCAD user folder?</b> In FreeCAD, open <i>View ▸ Panels ▸ Python console</i> and type <code>App.getUserAppDataDir()</code>. It prints the path. On Windows it is usually <code>%APPDATA%\FreeCAD\vXX-Y</code>, on Linux <code>~/.local/share/FreeCAD/vXX-Y</code>, and on macOS <code>~/Library/Application Support/FreeCAD/vXX-Y</code>. If there is no <code>Mod</code> folder yet, create it.</p>
 
     <h2 id="use">How to use it</h2>
 
