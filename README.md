@@ -7,7 +7,7 @@ A FreeCAD addon that lets you name Sketcher and PartDesign features in the dialo
 ## What it does
 
 - Adds a **Name** field at the top of the Tasks panel while a Sketch or PartDesign feature is being edited. Typing renames the feature live, and Cancel / Ctrl+Z undo it together with the feature.
-- When a feature still has its default name (`Sketch003`, `Pad001`, ...), it pops up a small dialog asking for a name. The current name is preselected, so you just type and press Enter.
+- When a feature still has its default name (`Sketch003`, `Pad001`, ...), it pops up a small dialog asking for a name. The field starts empty (the default name shows greyed out), so you just type and press Enter.
 - Features built from an already named feature are named automatically, without a popup: a Pad from `OutsideMoat_SKT` becomes `OutsideMoat_PAD`, and a Fillet on that becomes `OutsideMoat_FIL`. The name comes from `Profile`, `Base` (dress-up features) or `Originals` (patterns).
 - A type postfix is added to names you type: `OutsideMoat` for a sketch becomes `OutsideMoat_SKT`. Defaults include `_SKT` Sketch, `_PAD` Pad, `_PKT` Pocket, `_REV` Revolution, `_GRV` Groove, `_HOLE` Hole, `_SWP` Sweep (additive pipe), `_LOFT` Loft, `_FIL` Fillet, `_CHF` Chamfer, `_MIR` Mirrored, `_LPAT` / `_PPAT` patterns. Edit them in **Tools > FeatureNamer: edit postfixes...**
 - Each behavior can be switched on or off from the **Tools** menu (below *Edit parameters...*). Settings live in `BaseApp/Preferences/Mod/FeatureNamer`.
