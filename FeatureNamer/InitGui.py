@@ -1,2 +1,0 @@
-import FeatureNamerCore
-FeatureNamerCore.install()

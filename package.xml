@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<package format="1" xmlns="https://wiki.freecad.org/Package_Metadata">
+  <name>FeatureNamer</name>
+  <description>Name Sketcher and PartDesign features in their task dialog. Asks for a name when a feature is unnamed, names features after the feature they are built from, and adds type postfixes (_SKT, _PAD, ...).</description>
+  <version>0.2.0</version>
+  <date>2026-11-18</date>
+
+  <maintainer email="6765151+avongil@users.noreply.github.com">avongil</maintainer>
+  <author email="6765151+avongil@users.noreply.github.com">avongil</author>
+  <license file="LICENSE">LGPL-2.1-or-later</license>
+
+  <icon>freecad/FeatureNamer/resources/icons/FeatureNamer.svg</icon>
+  <freecadmin>1.1.0</freecadmin>
+  <pythonmin>3.11</pythonmin>
+
+  <url type="repository" branch="main">https://github.com/avongil/FreeCAD-FeatureNamer</url>
+  <url type="readme">https://raw.githubusercontent.com/avongil/FreeCAD-FeatureNamer/main/README.md</url>
+  <url type="bugtracker">https://github.com/avongil/FreeCAD-FeatureNamer/issues</url>
+  <url type="documentation">https://avongil.github.io/FreeCAD-FeatureNamer/</url>
+
+  <content>
+    <other/>
+  </content>
+
+  <tag>partdesign</tag>
+  <tag>sketcher</tag>
+  <tag>naming</tag>
+  <tag>feature tree</tag>
+  <tag>workflow</tag>
+</package>

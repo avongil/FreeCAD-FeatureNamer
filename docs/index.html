@@ -138,9 +138,9 @@ html{scroll-behavior:smooth}
     <h1>FeatureNamer</h1>
     <p class="lede">Name a feature in the dialog where you create or edit it. Features built from a named feature, and their type postfixes, are named for you.</p>
     <div class="meta">
-      <span><b>Targets</b> FreeCAD 27.1.0dev (weekly 2026.11.04)</span>
-      <span><b>Stack</b> Python 3.13 · PySide6 6.11</span>
-      <span><b>Status</b> working prototype</span>
+      <span><b>Requires</b> FreeCAD 1.1+</span>
+      <span><b>Developed on</b> FreeCAD 27.1.0dev (weekly 2026.11.04)</span>
+      <span><b>Version</b> 0.2.0 · working prototype</span>
     </div>
 
     <h2 id="why">Why</h2>
@@ -148,20 +148,34 @@ html{scroll-behavior:smooth}
     <p>Other CAD tools, Alibre Design for example, put a name field at the top of every feature dialog. FeatureNamer adds the same thing to FreeCAD. It can also ask for a name when a feature still has its default one.</p>
 
     <h2 id="install">Install</h2>
-    <p>FeatureNamer is a plain Python addon. You don't need to compile anything.</p>
+    <p>FeatureNamer is a plain Python addon in FreeCAD's modern addon layout, with a <code>package.xml</code> manifest. You don't need to compile anything. It works in every workbench and doesn't add a workbench of its own.</p>
+    <h3>With the Addon Manager (recommended)</h3>
+    <p>FeatureNamer isn't in the official addon list yet, so add it once as a custom repository:</p>
     <ol class="steps">
-      <li><div>Download the repository from <a href="https://github.com/avongil/FreeCAD-FeatureNamer">github.com/avongil/FreeCAD-FeatureNamer</a> (<b>Code ▸ Download ZIP</b>) and copy the <code>FeatureNamer</code> folder inside it into the <code>Mod</code> folder of your FreeCAD user folder. On Windows that is <code>%APPDATA%\FreeCAD\v27-1\Mod\</code>. The <code>vXX-Y</code> part matches your FreeCAD version.</div></li>
-      <li><div>Restart FreeCAD. The addon loads from <code>InitGui.py</code> at startup and works in every workbench. It doesn't add a workbench of its own.</div></li>
-      <li><div>To remove it, delete the folder.</div></li>
+      <li><div>Open <b>Edit ▸ Preferences ▸ Addon Manager ▸ Custom repositories</b> and add <code>https://github.com/avongil/FreeCAD-FeatureNamer</code> with branch <code>main</code>.</div></li>
+      <li><div>Open <b>Tools ▸ Addon Manager</b>, find <b>FeatureNamer</b> and click <b>Install</b>.</div></li>
+      <li><div>Restart FreeCAD. The Addon Manager also tells you when there's an update.</div></li>
+    </ol>
+    <h3>By hand</h3>
+    <ol class="steps">
+      <li><div>Download the repository from <a href="https://github.com/avongil/FreeCAD-FeatureNamer">github.com/avongil/FreeCAD-FeatureNamer</a> (<b>Code ▸ Download ZIP</b>) and unzip it.</div></li>
+      <li><div>Rename the unzipped folder from <code>FreeCAD-FeatureNamer-main</code> to <code>FeatureNamer</code> and move it into the <code>Mod</code> folder of your FreeCAD user folder.</div></li>
+      <li><div>Restart FreeCAD. To remove the addon, delete the folder.</div></li>
     </ol>
     <p>After copying, your FreeCAD user folder looks like this:</p>
 <pre><code>&lt;your FreeCAD user folder&gt;/
 └── Mod/
-    └── FeatureNamer/              <span class="c"># the folder you copied</span>
-        ├── InitGui.py             <span class="c"># imports the core module and calls install()</span>
-        ├── FeatureNamerCore.py    <span class="c"># observer, name field, popup, postfixes, settings</span>
-        └── Resources/
-            └── FeatureNamer.svg   <span class="c"># menu icon</span></code></pre>
+    └── FeatureNamer/                  <span class="c"># the unzipped folder, renamed</span>
+        ├── package.xml                <span class="c"># addon manifest</span>
+        └── freecad/
+            └── FeatureNamer/
+                ├── init_gui.py        <span class="c"># GUI entry point</span>
+                ├── core/naming.py     <span class="c"># pure naming rules (unit-tested)</span>
+                ├── features.py        <span class="c"># reads Profile / Base / Originals</span>
+                ├── preferences.py     <span class="c"># settings in the parameter store</span>
+                ├── commands.py        <span class="c"># Tools menu command</span>
+                ├── gui/               <span class="c"># observer, Name field, popup, preference page</span>
+                └── resources/icons/</code></pre>
     <p><b>Where is my FreeCAD user folder?</b> In FreeCAD, open <i>View ▸ Panels ▸ Python console</i> and type <code>App.getUserAppDataDir()</code>. It prints the path. On Windows it is usually <code>%APPDATA%\FreeCAD\vXX-Y</code>, on Linux <code>~/.local/share/FreeCAD/vXX-Y</code>, and on macOS <code>~/Library/Application Support/FreeCAD/vXX-Y</code>. If there is no <code>Mod</code> folder yet, create it.</p>
 
     <h2 id="use">How to use it</h2>
@@ -218,7 +232,7 @@ html{scroll-behavior:smooth}
       <li><b>When it still asks.</b> If the source feature still has a default name, such as a Pad from <code>Sketch004</code>, you get the popup as usual. New sketches always ask, because a sketch on a face usually starts something new.</li>
       <li><b>Patterns opened with nothing selected.</b> The name is filled in as soon as you pick the feature to pattern. If you close the dialog without picking one, you're asked for a name then.</li>
     </ul>
-    <p>To change postfixes, open <b>Tools ▸ FeatureNamer settings…</b>. Its <i>Automatic names</i> section has a table of feature types and their postfixes, where you can edit, add or remove rows, or reset everything to the defaults.</p>
+    <p>To change postfixes, open <b>Edit ▸ Preferences ▸ FeatureNamer</b>. Its <i>Automatic names</i> section has a table of feature types and their postfixes, where you can edit, add or remove rows, or reset everything to the defaults.</p>
     <div class="tbl"><table class="pf">
       <thead><tr><th>Feature</th><th>Postfix</th><th>Feature</th><th>Postfix</th></tr></thead>
       <tbody>
@@ -236,7 +250,7 @@ html{scroll-behavior:smooth}
     </table></div>
 
     <h2 id="settings">Settings</h2>
-    <p>All options are in one dialog: <b>Tools ▸ FeatureNamer settings…</b>, the entry with the green tag icon right below <i>Edit Parameters</i>. It has three groups: <i>Naming features</i>, <i>Automatic names</i> (with the postfix table) and <i>Ignore these feature types</i>. The settings are saved under <code>BaseApp/Preferences/Mod/FeatureNamer</code>.</p>
+    <p>All options are on one page: <b>Edit ▸ Preferences ▸ FeatureNamer</b>. <b>Tools ▸ FeatureNamer settings…</b>, the entry with the green tag icon right below <i>Edit Parameters</i>, opens the same page, even while you're sketching. It has three groups: <i>Naming features</i>, <i>Automatic names</i> (with the postfix table) and <i>Ignore these feature types</i>. The settings are saved under <code>BaseApp/Preferences/Mod/FeatureNamer</code>.</p>
     <div class="tbl"><table>
       <thead><tr><th>Parameter</th><th>Default</th><th>Effect</th></tr></thead>
       <tbody>
@@ -244,7 +258,7 @@ html{scroll-behavior:smooth}
         <tr><td><code>PromptIfUnnamed</code></td><td class="on">on</td><td>Show the popup when editing starts on a feature with a default name.</td></tr>
         <tr><td><code>NameFromBase</code></td><td class="on">on</td><td>Name a feature after the feature it is built from, such as <code>Moat_SKT</code> → <code>Moat_PAD</code>, without asking.</td></tr>
         <tr><td><code>AutoPostfix</code></td><td class="on">on</td><td>Add the type postfix to names you type.</td></tr>
-        <tr><td><code>Postfixes</code></td><td>see table</td><td>One <code>TypeId=postfix</code> pair per line. Edit them in <i>FeatureNamer settings…</i>.</td></tr>
+        <tr><td><code>Postfixes</code></td><td>see table</td><td>One <code>TypeId=postfix</code> pair per line. Edit them on the preference page.</td></tr>
         <tr><td><code>FocusNameField</code></td><td>off</td><td>Put the cursor in the Name field instead of showing a popup. This is the less intrusive option. It only applies while <code>PromptIfUnnamed</code> is off.</td></tr>
         <tr><td><code>AskOnClose</code></td><td>off</td><td>After <b>OK</b>, ask again if the name is still the default, even if you skipped the first popup. This rename gets its own undo step.</td></tr>
         <tr><td><code>ExcludeTypes</code></td><td><code>PartDesign::Body</code></td><td>Comma-separated list of TypeIds to ignore, for example <code>PartDesign::Plane</code>.</td></tr>
@@ -255,7 +269,7 @@ html{scroll-behavior:smooth}
     <p>The addon uses only public FreeCAD Python APIs and reads one internal Qt class name. It doesn't patch any FreeCAD code.</p>
 
     <div class="flow">
-      <div class="n"><div class="k">startup</div><div><code>InitGui.py</code> registers a <b>Gui document observer</b>, one <code>FeatureNamer_Settings</code> command with its own SVG icon, and a <b>workbench manipulator</b> that adds the command to the Tools menu after <code>Std_DlgParameter</code>.</div></div>
+      <div class="n"><div class="k">startup</div><div><code>freecad/FeatureNamer/init_gui.py</code> waits until the main window exists, then registers a <b>Gui document observer</b>, a programmatic <b>preference page</b>, one <code>FeatureNamer_Settings</code> command (<code>CmdType: ForEdit</code>, with its own SVG icon), and a <b>workbench manipulator</b> that adds the command to the Tools menu after <code>Std_DlgParameter</code>. Qt comes through FreeCAD's <code>PySide</code> shim.</div></div>
       <div class="n"><div class="k">slotInEdit(vp)</div><div>Runs whenever a view provider enters edit mode. If <code>vp.Object.TypeId</code> starts with <code>Sketcher::</code> or <code>PartDesign::</code> and isn't excluded, that object becomes the current target. The rest of the work is deferred with <code>QTimer.singleShot(0)</code> so <code>setEdit()</code> can finish building its task dialog first.</div></div>
       <div class="n"><div class="k">inject</div><div>Finds the visible <code>Gui::TaskView::TaskPanel</code> widget and inserts a <code>NameBox</code> frame at index 0 of its <code>QBoxLayout</code>, above the dialog's first task box.</div></div>
       <div class="n"><div class="k">derive</div><div>If the label is still the default, it finds the feature's source through <code>Profile</code>, <code>Base</code> (dress-up features only) or <code>Originals</code>. If the source has a real name, it removes the source's postfix and adds the new feature's postfix, so <code>OutsideMoat_SKT</code> becomes <code>OutsideMoat_PAD</code>. If the feature has no source yet, the watchdog keeps checking until one is picked.</div></div>
@@ -266,12 +280,12 @@ html{scroll-behavior:smooth}
 
     <h3>Detecting a default name</h3>
     <p>A label counts as default if it equals the internal <code>Name</code>, or if it is the name's alphabetic part followed only by digits. So a new <code>Pad003</code> labelled <code>Pad003</code>, or <code>Pad</code> after a copy, counts as unnamed. <code>Pad base plate</code> doesn't.</p>
-<pre><code>def _is_default_label(obj):
-    label, name = obj.Label, obj.Name
+<pre><code><span class="c"># core/naming.py: no FreeCAD imports, covered by tests/test_naming.py</span>
+def is_default_label(label, name):
     if label == name:
         return True
-    base = re.sub(r"\d+$", "", name)            <span class="c"># "Pad003" -&gt; "Pad"</span>
-    return re.fullmatch(re.escape(base) + r"\d*", label) is not None</code></pre>
+    base = kind_from_name(name)                 <span class="c"># "Pad003" -&gt; "Pad"</span>
+    return bool(base) and re.fullmatch(re.escape(base) + r"\d*", label) is not None</code></pre>
 
     <h3>Finding the task panel</h3>
 <pre><code>for w in Gui.getMainWindow().findChildren(QtWidgets.QWidget):
