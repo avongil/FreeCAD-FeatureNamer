@@ -12,6 +12,10 @@ A FreeCAD addon that lets you name Sketcher and PartDesign features in the dialo
 - A type postfix is added to names you type: `OutsideMoat` for a sketch becomes `OutsideMoat_SKT`. Defaults include `_SKT` Sketch, `_PAD` Pad, `_PKT` Pocket, `_REV` Revolution, `_GRV` Groove, `_HOLE` Hole, `_SWP` Sweep (additive pipe), `_LOFT` Loft, `_FIL` Fillet, `_CHF` Chamfer, `_MIR` Mirrored, `_LPAT` / `_PPAT` patterns. Edit them in **Edit > Preferences > FeatureNamer**.
 - All options are on one page: **Edit > Preferences > FeatureNamer**. **Tools > FeatureNamer settings...** (green tag icon, below *Edit Parameters*) opens it. Settings live in `BaseApp/Preferences/Mod/FeatureNamer`.
 
+![FeatureNamer preference page, with a model tree named HEX_SKT, HEX_PAD, HEX_Bottom_CHF and HEX_Top_SHL](docs/images/preferences.png)
+
+*The FeatureNamer page in Edit > Preferences. On the left, the tree it produces: the Pad built from `HEX_SKT` was named `HEX_PAD` automatically.*
+
 | Parameter | Default | Effect |
 |---|---|---|
 | `ShowNameField` | on | Name field at the top of the Tasks panel |

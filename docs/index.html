@@ -111,6 +111,7 @@ td:first-child{white-space:nowrap}
 .chip b{color:var(--accent)}
 .arrow{font-size:13px;color:var(--muted)}
 .pf td:first-child{white-space:normal}
+.shot{display:block;width:100%;max-width:100%;height:auto;border:1px solid var(--rule);border-radius:6px}
 footer{margin-top:72px;font-size:14px;color:var(--muted);border-top:1px solid var(--rule);padding-top:16px}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
 html{scroll-behavior:smooth}
@@ -251,6 +252,10 @@ html{scroll-behavior:smooth}
 
     <h2 id="settings">Settings</h2>
     <p>All options are on one page: <b>Edit ▸ Preferences ▸ FeatureNamer</b>. <b>Tools ▸ FeatureNamer settings…</b>, the entry with the green tag icon right below <i>Edit Parameters</i>, opens the same page, even while you're sketching. It has three groups: <i>Naming features</i>, <i>Automatic names</i> (with the postfix table) and <i>Ignore these feature types</i>. The settings are saved under <code>BaseApp/Preferences/Mod/FeatureNamer</code>.</p>
+    <figure class="figure">
+      <img class="shot" src="images/preferences.png" width="1292" height="932" alt="The FeatureNamer page in FreeCAD's Preferences dialog, next to a model tree with features named HEX_SKT, HEX_PAD, HEX_Bottom_CHF and HEX_Top_SHL">
+      <figcaption>The FeatureNamer page in <i>Edit ▸ Preferences</i>. On the left is the tree it produces: the Pad built from <code>HEX_SKT</code> was named <code>HEX_PAD</code> automatically, and the dress-up features carry <code>_CHF</code> and <code>_SHL</code>.</figcaption>
+    </figure>
     <div class="tbl"><table>
       <thead><tr><th>Parameter</th><th>Default</th><th>Effect</th></tr></thead>
       <tbody>
