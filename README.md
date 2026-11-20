@@ -45,6 +45,10 @@ Most features are built from another feature. When that one already has a name, 
 
 <p align="center"><img src="docs/images/chain.png" width="620" alt="OutsideMoat_SKT, then Pad, gives OutsideMoat_PAD, then Fillet gives OutsideMoat_FIL"></p>
 
+In a real model: the sketch was named `BestaGon` in the popup (`_SKT` added), so the Pad opens already named `BestaGon_PAD`.
+
+<p align="center"><img src="docs/images/real-model-pad.png" width="720" alt="A hexagon Pad being created on a bumper trim; the Name field at the top of the Tasks panel already reads BestaGon_PAD"></p>
+
 - **Postfixes:** type `OutsideMoat` for a sketch and you get `OutsideMoat_SKT`. If you type the postfix yourself, it isn't added twice.
 - **Where the name comes from:** `Profile` (Pad, Pocket, Revolution, Groove, Hole, Sweep, Loft, Helix), `Base` (Fillet, Chamfer, Draft, Thickness) or `Originals` (patterns and Mirrored).
 - **When it still asks:** new sketches always ask, and so does a feature whose source still has a default name.
