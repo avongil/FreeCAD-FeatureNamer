@@ -128,7 +128,7 @@ class SettingsForm(QtWidgets.QWidget):
             w.remove_boxes()
 
 
-class PreferencesPage:
+class FeatureNamerPreferencesPage:
     """Programmatic preference page (Gui.addPreferencePage)."""
 
     def __init__(self, _parent=None):

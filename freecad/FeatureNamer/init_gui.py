@@ -12,7 +12,7 @@ import FreeCADGui as Gui
 
 from . import commands  # noqa: F401  (registers FeatureNamer_Settings)
 from .gui.controller import Controller
-from .gui.preferences_page import PreferencesPage
+from .gui.preferences_page import FeatureNamerPreferencesPage
 
 Gui.addIconPath(str(Path(__file__).parent / "resources" / "icons"))
 
@@ -24,6 +24,7 @@ class _Manipulator:
 
 _controller = Controller()
 Gui.addDocumentObserver(_controller)
-Gui.addPreferencePage(PreferencesPage, "FeatureNamer")
+# FreeCAD keys Python preference pages by class name, so the name must be globally unique.
+Gui.addPreferencePage(FeatureNamerPreferencesPage, "FeatureNamer")
 _manipulator = _Manipulator()
 Gui.addWorkbenchManipulator(_manipulator)

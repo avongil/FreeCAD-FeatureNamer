@@ -1,6 +1,6 @@
 [project]
 name = "freecad-featurenamer"
-version = "0.2.0"
+version = "0.2.1"
 description = "Name Sketcher and PartDesign features in their FreeCAD task dialog"
 readme = "README.md"
 license = "LGPL-2.1-or-later"
