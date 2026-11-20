@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2 - 2026-11-19
+
+- Fixed: no name popup for a new sketch or feature that reused the internal name of a deleted one. For example, after deleting `Sketch009`, the next sketch is `Sketch009` again and was treated as already asked. FeatureNamer now tracks objects by their ID, which FreeCAD never reuses.
+
 ## 0.2.1 - 2026-11-19
 
 - Preference page class renamed to `FeatureNamerPreferencesPage`. FreeCAD identifies Python preference pages by class name, so the generic `PreferencesPage` clashed with other addons (another addon's group showed the FeatureNamer page).

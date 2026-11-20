@@ -2,7 +2,7 @@
 <package format="1" xmlns="https://wiki.freecad.org/Package_Metadata">
   <name>FeatureNamer</name>
   <description>Name Sketcher and PartDesign features in their task dialog. Asks for a name when a feature is unnamed, names features after the feature they are built from, and adds type postfixes (_SKT, _PAD, ...).</description>
-  <version>0.2.1</version>
+  <version>0.2.2</version>
   <date>2026-11-19</date>
 
   <maintainer email="6765151+avongil@users.noreply.github.com">avongil</maintainer>

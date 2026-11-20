@@ -27,8 +27,14 @@ def is_alive(obj) -> bool:
         return False
 
 
-def key(obj) -> tuple[str, str]:
-    return (obj.Document.Name, obj.Name)
+def key(obj) -> tuple[str, int]:
+    """Identity for "already asked" bookkeeping.
+
+    Uses the object's ID, which a document never reuses. The internal Name is
+    reused: delete Sketch009 and the next sketch is Sketch009 again, which made
+    FeatureNamer treat the new sketch as already asked and stay silent.
+    """
+    return (obj.Document.Name, obj.ID)
 
 
 def kind(obj) -> str:
