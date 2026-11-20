@@ -12,6 +12,7 @@
 <p align="center">
   <a href="https://avongil.github.io/FreeCAD-FeatureNamer/"><b>Manual</b></a> ·
   <a href="https://avongil.github.io/FreeCAD-FeatureNamer/how-it-works.html"><b>How it works</b></a> ·
+  <a href="https://avongil.github.io/FreeCAD-FeatureNamer/#demo"><b>Demo video</b></a> ·
   <a href="#install">Install</a> ·
   <a href="#settings">Settings</a> ·
   <a href="CHANGELOG.md">Changelog</a>

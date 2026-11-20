@@ -145,6 +145,14 @@ html{scroll-behavior:smooth}
       <span><b>Version</b> 0.2.0 · working prototype</span>
     </div>
 
+    <figure class="demo" id="demo" style="margin:32px 0 0;max-width:none">
+  <video controls preload="metadata" playsinline poster="https://avongil.github.io/FreeCAD-Resolve_Mode/media/demo-poster.jpg" style="width:100%;height:auto;display:block;border:1px solid var(--rule);border-radius:10px;background:#000">
+    <source src="https://avongil.github.io/FreeCAD-Resolve_Mode/media/demo.mp4" type="video/mp4">
+    <a href="https://avongil.github.io/FreeCAD-Resolve_Mode/media/demo.mp4">Download the demo video (MP4, 8 MB)</a>
+  </video>
+  <figcaption style="font-size:14px;color:var(--muted);margin-top:8px">Demo (3 min, narrated): Resolve_Mode fixing broken fillet references in a real model, then FeatureNamer naming a sketch and pad.</figcaption>
+    </figure>
+
     <h2 id="why">Why</h2>
     <p>The tree of a real PartDesign body soon turns into <code>Sketch007</code>, <code>Pad004</code>, <code>Pocket012</code>. A feature is easiest to name right after you create it, while you still know what it is for. But FreeCAD's task dialogs have nowhere to type a name. You have to go back to the tree, find the item, rename it, and then return to your work.</p>
     <p>Other CAD tools, Alibre Design for example, put a name field at the top of every feature dialog. FeatureNamer adds the same thing to FreeCAD. It can also ask for a name when a feature still has its default one.</p>
