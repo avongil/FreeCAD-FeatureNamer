@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>*,*::before,*::after{box-sizing:border-box}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>FeatureNamer Internals</title>
+<meta name="description" content="Developer guide to the FeatureNamer FreeCAD addon: the edit-mode lifecycle, how the Name field is injected, how names are derived from base features, transactions, bookkeeping, and why it is built this way.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Technical-manual column with a sticky contents rail; tokens shared with the user manual */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --ink:#1b2130; --muted:#5a6375; --rule:#d9dde5;
+  --accent:#2f5bd3; --accent-soft:#e6ecfb; --namefield:#c9f27a; --namefield-ink:#1d2a05;
+  --code-bg:#eef0f4; --warn:#a15c00; --warn-soft:#fff3df; --ok:#2e7d32; --ok-soft:#e5f3e6;
+  --f-display:"Archivo", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", Consolas, "Courier New", monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12151d; --surface:#1a1f2a; --ink:#e6e9f0; --muted:#9aa3b5; --rule:#2c3343;
+  --accent:#86a5ff; --accent-soft:#1e2a4a; --namefield:#b5e35c; --namefield-ink:#16210a;
+  --code-bg:#202632; --warn:#f0b35c; --warn-soft:#2e2412; --ok:#6cc070; --ok-soft:#18301b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12151d; --surface:#1a1f2a; --ink:#e6e9f0; --muted:#9aa3b5; --rule:#2c3343;
+  --accent:#86a5ff; --accent-soft:#1e2a4a; --namefield:#b5e35c; --namefield-ink:#16210a;
+  --code-bg:#202632; --warn:#f0b35c; --warn-soft:#2e2412; --ok:#6cc070; --ok-soft:#18301b; color-scheme:dark}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.6;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:200px minmax(0,1fr);gap:56px;padding-block:48px 96px}
+@media (max-width:860px){.wrap{grid-template-columns:minmax(0,1fr);gap:24px;padding-block:28px 64px}.toc{display:none}}
+.toc{position:sticky;top:24px;align-self:start;font-size:14px}
+.toc p{font-family:var(--f-display);font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:12px;color:var(--muted);margin:0 0 10px}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.toc a{color:var(--muted);text-decoration:none}
+.toc a:hover,.toc a:focus-visible{color:var(--accent)}
+main{min-width:0}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(34px,5vw,52px);font-weight:800;letter-spacing:-.02em}
+h2{font-size:28px;font-weight:800;margin-top:72px;padding-top:20px;border-top:2px solid var(--ink)}
+h3{font-size:19px;font-weight:700;margin-top:32px}
+p,li{max-width:70ch}
+a{color:var(--accent)}
+.eyebrow{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.lede{font-size:20px;color:var(--muted);margin:16px 0 0}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:22px;font-size:14px;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:600}
+code,pre{font-family:var(--f-mono);font-size:.86em}
+code{background:var(--code-bg);padding:.1em .35em;border-radius:4px;overflow-wrap:anywhere}
+pre{background:var(--code-bg);padding:14px 16px;border-radius:8px;overflow-x:auto;line-height:1.5;max-width:100%}
+pre code{background:none;padding:0}
+.diagram{margin-top:24px;background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:16px;overflow-x:auto}
+.diagram svg{display:block;min-width:680px;width:100%;height:auto}
+.diagram text{font-family:var(--f-body);font-size:13px;fill:var(--ink)}
+.diagram .sub{fill:var(--muted);font-size:11.5px}
+.diagram .mono{font-family:var(--f-mono);font-size:12px}
+.diagram .box{fill:var(--bg);stroke:var(--rule);stroke-width:1.5}
+.diagram .box.hot{stroke:var(--accent);fill:var(--accent-soft)}
+.diagram .box.name{stroke:var(--namefield);fill:var(--namefield);}
+.diagram .box.name + text{fill:var(--namefield-ink)}
+.diagram .arrow{stroke:var(--muted);stroke-width:1.5;fill:none;marker-end:url(#ah)}
+.diagram .dash{stroke-dasharray:4 4}
+.diagram .lane{stroke:var(--rule);stroke-width:1}
+table{border-collapse:collapse;width:100%;margin-top:16px;font-size:15px;background:var(--surface);border:1px solid var(--rule);border-radius:8px;display:block;overflow-x:auto}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-family:var(--f-display);font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+tr:last-child td{border-bottom:none}
+td:first-child{white-space:nowrap}
+.note{background:var(--warn-soft);border-left:4px solid var(--warn);padding:12px 16px;border-radius:0 8px 8px 0;margin-top:20px}
+.note p{margin:0}
+.qa{margin-top:24px;background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:18px 22px}
+.qa h3{margin-top:0;font-size:18px}
+.qa p:last-child{margin-bottom:0}
+.steps{counter-reset:s;list-style:none;padding:0;margin-top:16px}
+.steps>li{counter-increment:s;position:relative;padding-left:44px;margin-top:16px}
+.steps>li::before{content:counter(s);position:absolute;left:0;top:1px;width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-family:var(--f-display);font-weight:800;display:grid;place-items:center;font-size:14px}
+.steps b{font-family:var(--f-mono);font-weight:600;font-size:.9em}
+footer{margin-top:72px;font-size:14px;color:var(--muted);border-top:1px solid var(--rule);padding-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="toc" aria-label="Contents">
+  <p>Contents</p>
+  <ol>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#startup">Startup</a></li>
+    <li><a href="#lifecycle">The edit lifecycle</a></li>
+    <li><a href="#namefield">The Name field</a></li>
+    <li><a href="#naming">Naming rules</a></li>
+    <li><a href="#bookkeeping">Who has been asked</a></li>
+    <li><a href="#transactions">Undo and Cancel</a></li>
+    <li><a href="#settings">Settings</a></li>
+    <li><a href="#faq">Developer questions</a></li>
+    <li><a href="#limits">Limits</a></li>
+    <li><a href="#code">Code map</a></li>
+    <li><a href="#tests">Tests</a></li>
+  </ol>
+</nav>
+<main>
+<p class="eyebrow">FreeCAD addon · how it works</p>
+<h1>FeatureNamer internals</h1>
+<p class="lede">How a pure-Python addon adds a Name field to every Sketcher and PartDesign task dialog, names features after the feature they are built from, and asks for a name only when it should, without hooking into any FreeCAD C++ code.</p>
+<div class="meta">
+  <span><b>Targets</b> FreeCAD 1.1+ (tested on 27.1 dev)</span>
+  <span><b>Scope</b> Sketcher and PartDesign edit dialogs</span>
+  <span><b>Core changes</b> none, Python only</span>
+  <span><b>User manual</b> <a href="./">avongil.github.io/FreeCAD-FeatureNamer</a></span>
+</div>
+
+<h2 id="overview">Overview</h2>
+<p>FeatureNamer only works on features while they are being edited. It doesn't scan the document, add properties, or store anything in the <code>.FCStd</code> file. The only thing it ever changes is <code>obj.Label</code>. The work is split into three parts:</p>
+<ul>
+  <li><b>A Gui document observer</b> (<code>gui/controller.py</code>). It learns when a view provider enters or leaves edit mode, and decides whether to name the feature, wait, or ask.</li>
+  <li><b>Widgets</b> (<code>gui/widgets.py</code>): the Name field placed at the top of the task panel, and the <em>Name feature</em> popup.</li>
+  <li><b>Pure rules</b> (<code>core/naming.py</code>): what counts as a default label, and how postfixes are added, stripped and carried over. This part has no FreeCAD imports and is unit-tested.</li>
+</ul>
+
+<h2 id="startup">Startup</h2>
+<p><code>init_gui.py</code> registers everything when the module is imported. That way the Tools menu entry exists before the first workbench builds its menus. An earlier version deferred this, and the entry only appeared after switching workbenches. It registers four things:</p>
+<ol>
+  <li>The command <code>FeatureNamer_Settings</code>, with <code>CmdType: ForEdit</code> so it stays clickable while a sketch is open.</li>
+  <li><code>Gui.addDocumentObserver(controller)</code>. This is a <em>Gui</em> observer, because edit-mode signals (<code>slotInEdit</code>, <code>slotResetEdit</code>) only exist on the Gui document.</li>
+  <li><code>Gui.addPreferencePage(FeatureNamerPreferencesPage, "FeatureNamer")</code>.</li>
+  <li>A workbench manipulator that inserts the command after <code>Std_DlgParameter</code> in the Tools menu.</li>
+</ol>
+<div class="note"><p><b>The preference page class name must be globally unique.</b> FreeCAD identifies Python preference pages by class name. Until 0.2.1 the class was called <code>PreferencesPage</code>, and when another addon (Resolve_Mode) used the same name, its preferences group showed FeatureNamer's page.</p></div>
+
+<h2 id="lifecycle">The edit lifecycle</h2>
+<p>FreeCAD has no signal for "a task dialog finished building" or "the user picked a base feature". So the controller combines two edit-mode signals, a deferred call, and a 400 ms watchdog that runs only while a target is in edit.</p>
+<div class="diagram" role="img" aria-label="Timeline of one edit: slotInEdit, a deferred on_enter that derives a name or prompts and injects the Name field, a 400 millisecond watchdog that re-injects the field and watches for a picked base feature, then slotResetEdit or the watchdog ends the edit and a deferred after_close may derive a name or ask again.">
+<svg viewBox="0 0 940 300" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(--muted)"/></marker></defs>
+  <text x="10" y="22" class="sub">FreeCAD</text>
+  <line class="lane" x1="10" y1="30" x2="930" y2="30"/>
+  <text x="10" y="148" class="sub">FeatureNamer</text>
+  <rect class="box" x="10" y="44" width="150" height="56" rx="10"/>
+  <text x="85" y="68" text-anchor="middle" class="mono">setEdit()</text>
+  <text x="85" y="87" text-anchor="middle" class="sub">→ slotInEdit(vp)</text>
+  <rect class="box hot" x="200" y="160" width="190" height="78" rx="10"/>
+  <text x="295" y="184" text-anchor="middle" class="mono">_on_enter()</text>
+  <text x="295" y="204" text-anchor="middle" class="sub">derive name, or wait for base,</text>
+  <text x="295" y="220" text-anchor="middle" class="sub">or prompt · inject Name field</text>
+  <rect class="box hot" x="430" y="160" width="190" height="78" rx="10"/>
+  <text x="525" y="184" text-anchor="middle" class="mono">_tick() every 400 ms</text>
+  <text x="525" y="204" text-anchor="middle" class="sub">re-inject if panel rebuilt ·</text>
+  <text x="525" y="220" text-anchor="middle" class="sub">name once a base is picked</text>
+  <rect class="box" x="560" y="44" width="170" height="56" rx="10"/>
+  <text x="645" y="68" text-anchor="middle" class="mono">resetEdit()</text>
+  <text x="645" y="87" text-anchor="middle" class="sub">→ slotResetEdit(vp)</text>
+  <rect class="box hot" x="660" y="160" width="130" height="78" rx="10"/>
+  <text x="725" y="184" text-anchor="middle" class="mono">_edit_ended()</text>
+  <text x="725" y="204" text-anchor="middle" class="sub">remove field,</text>
+  <text x="725" y="220" text-anchor="middle" class="sub">stop watchdog</text>
+  <rect class="box hot" x="810" y="160" width="120" height="78" rx="10"/>
+  <text x="870" y="184" text-anchor="middle" class="mono">_after_close()</text>
+  <text x="870" y="204" text-anchor="middle" class="sub">derive, or</text>
+  <text x="870" y="220" text-anchor="middle" class="sub">ask again</text>
+  <path class="arrow" d="M120 100V140H295V158"/>
+  <text x="200" y="134" class="sub">QTimer.singleShot(0)</text>
+  <path class="arrow" d="M390 199H428"/>
+  <path class="arrow" d="M645 100V140H725V158"/>
+  <path class="arrow dash" d="M620 222H658"/>
+  <text x="560" y="262" class="sub">watchdog sees the edit end first → same _edit_ended()</text>
+  <path class="arrow" d="M790 199H808"/>
+  <text x="742" y="284" class="sub">singleShot(0), only if AskOnClose or waiting for a base</text>
+</svg>
+</div>
+<ol class="steps">
+  <li><b>slotInEdit(vp)</b> If <code>vp.Object.TypeId</code> starts with <code>Sketcher::</code> or <code>PartDesign::</code> and isn't excluded (the default exclusion is <code>PartDesign::Body</code>), the object becomes <code>current</code>. Everything else is deferred with <code>QTimer.singleShot(0)</code>, because the task dialog doesn't exist yet when this slot fires.</li>
+  <li><b>_on_enter()</b> If the label is a default one and the object hasn't been asked about, the controller first tries to <em>derive</em> a name from the base feature, silently. If the feature depends on a base that hasn't been picked yet (for example a pattern opened with nothing selected), it sets <code>waiting_for_base</code> instead. It then injects the Name field and starts the watchdog. If the feature is still unnamed and <code>PromptIfUnnamed</code> is on, it shows the popup.</li>
+  <li><b>_tick()</b> Every 400 ms while in edit, the watchdog does three things:
+    <ul>
+      <li>It checks that <code>getInEdit()</code> is still this object. If not, it ends the edit, because a reset signal can be missed.</li>
+      <li>If it's waiting for a base, it tries to derive the name again.</li>
+      <li>It re-injects the Name field if the dialog rebuilt its panel. The Sketcher does this, for example.</li>
+    </ul></li>
+  <li><b>_edit_ended()</b> Runs when <code>slotResetEdit</code> or the watchdog notices the edit ended, whichever comes first. It is idempotent. It removes the field, stops the timer and clears <code>current</code>. If <code>AskOnClose</code> is on, or the feature was waiting for a base, it schedules <code>_after_close</code>.</li>
+  <li><b>_after_close(obj)</b> It stops if the object was deleted (Cancel on a new feature deletes it), if the object already has a real name, or if it was already asked about. Otherwise it derives a name, or shows the popup, inside its <em>own</em> transaction, because the edit transaction is closed by now.</li>
+</ol>
+
+<h2 id="namefield">The Name field</h2>
+<p>There is no public API for adding a widget to another command's task dialog. So the addon finds the panel by its Qt class name and inserts a frame at the top of its box layout:</p>
+<pre><code>for w in Gui.getMainWindow().findChildren(QtWidgets.QWidget):
+    if w.metaObject().className() == "Gui::TaskView::TaskPanel" and w.isVisible():
+        w.layout().insertWidget(0, NameBox(obj, w))</code></pre>
+<p>The frame has the object name <code>FeatureNamerBox</code> and keeps a reference to its object, so the watchdog can tell whether the right field is already in place. Its behaviour:</p>
+<ul>
+  <li><b><code>textEdited</code></b> writes <code>obj.Label</code> on every keystroke. The tree updates live, and the rename becomes part of the dialog's open transaction (see <a href="#transactions">Undo and Cancel</a>).</li>
+  <li><b><code>editingFinished</code></b> adds the type postfix, but only if the text was changed. That way, clicking into the field and back out never turns <code>Sketch009</code> into <code>Sketch009_SKT</code>.</li>
+  <li><b>Enter</b> finishes the edit and hands keyboard focus back to the 3D view, so Sketcher shortcuts work again.</li>
+  <li><b><code>FocusNameField</code></b> moves the cursor into the field once per edit. It only applies when the popup is off and the label is still a default one. A feature that was named after its base keeps the cursor in its first input, for example Length.</li>
+</ul>
+
+<h2 id="naming">Naming rules</h2>
+<p>All of this lives in <code>core/naming.py</code> and has no FreeCAD dependency.</p>
+<h3>What counts as a default label</h3>
+<p>A label is a default one if it equals the internal <code>Name</code>, or if it's the alphabetic part of the name followed only by digits. Because the comparison uses the untranslated internal name, it works in any interface language.</p>
+<table>
+  <thead><tr><th>Name</th><th>Label</th><th>Default?</th></tr></thead>
+  <tbody>
+    <tr><td><code>Pad003</code></td><td><code>Pad003</code></td><td>yes</td></tr>
+    <tr><td><code>Sketch009</code></td><td><code>Sketch</code></td><td>yes (a new sketch is labelled without its counter)</td></tr>
+    <tr><td><code>Pad003</code></td><td><code>Pad</code></td><td>yes (a copy)</td></tr>
+    <tr><td><code>Pad003</code></td><td><code>Pad base plate</code></td><td>no</td></tr>
+  </tbody>
+</table>
+<h3>Postfixes and naming from the base feature</h3>
+<p>The postfix table maps a TypeId to a postfix, for example <code>PartDesign::Pad=_PAD</code>. <code>add_postfix</code> appends the postfix unless the text already ends with it (ignoring case). A feature's base is found through:</p>
+<ul>
+  <li><code>Profile</code>: pads, pockets, revolutions, pipes, lofts and holes</li>
+  <li><code>Base</code>: only for dress-up features (fillet, chamfer, draft, thickness)</li>
+  <li><code>Originals</code>: patterns and mirrors</li>
+</ul>
+<pre><code>derive_label("OutsideMoat_SKT", all_postfixes, "_PAD")  -&gt; "OutsideMoat_PAD"
+derive_label("OutsideMoat_PAD", all_postfixes, "_FIL")  -&gt; "OutsideMoat_FIL"
+derive_label("Bracket_SLOFT",   all_postfixes, "_MIR")  -&gt; "Bracket_MIR"    # longest postfix wins: _SLOFT, not _LOFT
+derive_label("Plate",           all_postfixes, "")      -&gt; None             # no postfix: would only copy the name</code></pre>
+<p>Nothing is derived from a base that still has a default label. <code>Pad</code> from <code>Sketch009</code> stays unnamed, and the popup or the close prompt handles it. Renaming the sketch later doesn't rename features that were already built from it.</p>
+
+<h2 id="bookkeeping">Who has been asked</h2>
+<p>Two sets stop the addon from nagging: <code>asked</code> (popup shown when entering edit) and <code>asked_close</code> (prompt shown after OK). A derived name adds the object to both.</p>
+<div class="note"><p><b>The key is <code>(document name, obj.ID)</code>, not the internal name.</b> FreeCAD reuses internal names: delete <code>Sketch009</code>, draw a new sketch, and it's <code>Sketch009</code> again. Up to 0.2.1 the sets were keyed by name, so the new sketch counted as already asked and the close prompt never appeared. <code>obj.ID</code> is never reused within a document. This was fixed in 0.2.2.</p></div>
+
+<h2 id="transactions">Undo and Cancel</h2>
+<ul>
+  <li><b>While editing</b>, label changes go straight into the transaction the task dialog opened. Cancel then reverts the name together with the feature, and one Undo step removes both.</li>
+  <li><b>After the edit</b>, the close prompt runs when that transaction is already committed. It opens its own <em>Rename …</em> transaction, and aborts it if the rename raises.</li>
+  <li><b>Deleted features:</b> <code>is_alive(obj)</code> checks <code>doc.getObject(obj.Name) is obj</code> before any late rename. Cancel on a new feature deletes it, and FreeCAD may hand the same name to a later object.</li>
+</ul>
+
+<h2 id="settings">Settings</h2>
+<p>All settings live under <code>User parameter:BaseApp/Preferences/Mod/FeatureNamer</code> and are read at the moment they are used, so a change applies to the next edit without a restart.</p>
+<table>
+  <thead><tr><th>Key</th><th>Default</th><th>Effect</th></tr></thead>
+  <tbody>
+    <tr><td><code>ShowNameField</code></td><td>on</td><td>Shows the Name field at the top of the task panel.</td></tr>
+    <tr><td><code>PromptIfUnnamed</code></td><td>on</td><td>Shows the popup when an edit starts on a feature with a default label.</td></tr>
+    <tr><td><code>FocusNameField</code></td><td>off</td><td>Puts the cursor in the Name field instead of showing the popup. Only used when the popup is off.</td></tr>
+    <tr><td><code>AskOnClose</code></td><td>off</td><td>Asks after OK if the feature is still unnamed.</td></tr>
+    <tr><td><code>NameFromBase</code></td><td>on</td><td>Derives the name from the base feature.</td></tr>
+    <tr><td><code>AutoPostfix</code></td><td>on</td><td>Appends the type postfix.</td></tr>
+    <tr><td><code>Postfixes</code></td><td>built-in table</td><td>One <code>TypeId=_PF</code> per line.</td></tr>
+    <tr><td><code>ExcludeTypes</code></td><td><code>PartDesign::Body</code></td><td>Comma-separated TypeIds that are never handled.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="faq">Developer questions</h2>
+<div class="qa">
+  <h3>Why a 400 ms timer instead of signals?</h3>
+  <p>The events FeatureNamer needs don't have signals: a task dialog rebuilding its panel, a base feature being picked inside a dialog, or an edit ending without <code>slotResetEdit</code>. The timer only runs while a Sketcher or PartDesign object is in edit, does little per tick, and stops on the first sign that the edit ended.</p>
+</div>
+<div class="qa">
+  <h3>Isn't searching by <code>Gui::TaskView::TaskPanel</code> fragile?</h3>
+  <p>Yes. It's the one internal detail the addon depends on. If the task view were restructured, the Name field would stop appearing, but naming from the base feature and the popups would keep working, because they only use public APIs. A public header hook on <code>Gui::TaskView::TaskDialog</code> would remove this dependency (see the <a href="./#core">proposal for core</a>).</p>
+</div>
+<div class="qa">
+  <h3>Does it change files or add properties?</h3>
+  <p>No. It only sets <code>Label</code>, which is a standard property. Files are identical to ones named by hand, and they open the same without the addon.</p>
+</div>
+<div class="qa">
+  <h3>Why is the popup modal?</h3>
+  <p>It appears at a moment when FreeCAD expects the next action, entering edit or just after OK. A modal <code>exec()</code> keeps the rename inside the right transaction and stops the user editing a half-named feature. <em>Skip</em> closes it and records that the object was asked, so it doesn't come back for that object.</p>
+</div>
+<div class="qa">
+  <h3>Does it work in other languages?</h3>
+  <p>Detecting default labels uses the internal <code>Name</code>, which is never translated, so yes. The addon's own interface text is English only for now. The strings are wrapped for translation, but no translations ship yet.</p>
+</div>
+
+<h2 id="limits">Limits</h2>
+<ul>
+  <li><b>Edit mode only.</b> Only objects opened through <code>setEdit()</code> are handled. Commands that don't edit a document object, such as Part ▸ Extrude, aren't covered.</li>
+  <li><b>Keyboard focus.</b> While the Name field has focus, single-key Sketcher shortcuts type into it. Enter returns focus to the 3D view. This is why <code>FocusNameField</code> is off by default.</li>
+  <li><b>Duplicate labels.</b> If duplicate labels aren't allowed, FreeCAD appends a suffix. The field shows the final label once editing is finished.</li>
+  <li><b>No retroactive renames.</b> Features already built from a sketch keep their names when the sketch is renamed later. Opening such a feature for editing derives the name at that point.</li>
+  <li><b>Widget search cost.</b> <code>findChildren</code> walks the main window's widget tree on every watchdog tick. This hasn't been noticeable, but it isn't free.</li>
+</ul>
+
+<h2 id="code">Code map</h2>
+<table>
+  <thead><tr><th>File</th><th>Responsibility</th></tr></thead>
+  <tbody>
+    <tr><td><code>core/naming.py</code></td><td>Default postfix table, default-label detection, add/strip/derive. Pure Python.</td></tr>
+    <tr><td><code>features.py</code></td><td>Questions about document objects: target or not, alive, default label, base feature, key. Console-safe.</td></tr>
+    <tr><td><code>preferences.py</code></td><td>Reading and writing the parameter store, with explicit defaults.</td></tr>
+    <tr><td><code>gui/controller.py</code></td><td>Gui document observer, watchdog, decisions on entering and closing.</td></tr>
+    <tr><td><code>gui/widgets.py</code></td><td><code>NameBox</code>, <code>NameDialog</code>, task panel lookup, <code>set_label</code> with or without its own transaction.</td></tr>
+    <tr><td><code>gui/preferences_page.py</code></td><td><code>FeatureNamerPreferencesPage</code>: check boxes, postfix table, excluded types.</td></tr>
+    <tr><td><code>commands.py</code></td><td><code>FeatureNamer_Settings</code> (Tools menu).</td></tr>
+    <tr><td><code>init_gui.py</code></td><td>Registration at import.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="tests">Tests</h2>
+<p><code>tests/test_naming.py</code> (pytest, no FreeCAD needed) covers default labels, adding, stripping and deriving postfixes, and parsing the postfix table. The edit-mode behaviour was verified in the FreeCAD 27.1 dev GUI with scripted sessions:</p>
+<ul>
+  <li>A Pad created from a named sketch gets <code>…_PAD</code>, with the Name field in place.</li>
+  <li>Editing an existing default-named Pad derives its name.</li>
+  <li>An unnamed sketch gets the close prompt, including a sketch that reuses a deleted sketch's internal name.</li>
+</ul>
+<pre><code>python -m pytest -q tests</code></pre>
+
+<footer>FeatureNamer · <a href="./">user manual</a> · <a href="https://github.com/avongil/FreeCAD-FeatureNamer">source on GitHub</a> · LGPL-2.1-or-later</footer>
+</main>
+</div>
+</body>
+</html>

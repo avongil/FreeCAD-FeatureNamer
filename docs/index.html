@@ -131,6 +131,7 @@ html{scroll-behavior:smooth}
       <li><a href="#how">How it works</a></li>
       <li><a href="#limits">Limits</a></li>
       <li><a href="#core">Proposal for core</a></li>
+<li><a href="how-it-works.html">Developer guide ↗</a></li>
     </ol>
   </nav>
 
@@ -272,9 +273,10 @@ html{scroll-behavior:smooth}
 
     <h2 id="how">How it works</h2>
     <p>The addon uses only public FreeCAD Python APIs and reads one internal Qt class name. It doesn't patch any FreeCAD code.</p>
+    <p>For the full developer walkthrough (edit lifecycle, naming rules, bookkeeping, transactions), see <a href="how-it-works.html">How FeatureNamer works</a>.</p>
 
     <div class="flow">
-      <div class="n"><div class="k">startup</div><div><code>freecad/FeatureNamer/init_gui.py</code> waits until the main window exists, then registers a <b>Gui document observer</b>, a programmatic <b>preference page</b>, one <code>FeatureNamer_Settings</code> command (<code>CmdType: ForEdit</code>, with its own SVG icon), and a <b>workbench manipulator</b> that adds the command to the Tools menu after <code>Std_DlgParameter</code>. Qt comes through FreeCAD's <code>PySide</code> shim.</div></div>
+      <div class="n"><div class="k">startup</div><div><code>freecad/FeatureNamer/init_gui.py</code> registers, as soon as it is imported, a <b>Gui document observer</b>, a programmatic <b>preference page</b>, one <code>FeatureNamer_Settings</code> command (<code>CmdType: ForEdit</code>, with its own SVG icon), and a <b>workbench manipulator</b> that adds the command to the Tools menu after <code>Std_DlgParameter</code>. Qt comes through FreeCAD's <code>PySide</code> shim.</div></div>
       <div class="n"><div class="k">slotInEdit(vp)</div><div>Runs whenever a view provider enters edit mode. If <code>vp.Object.TypeId</code> starts with <code>Sketcher::</code> or <code>PartDesign::</code> and isn't excluded, that object becomes the current target. The rest of the work is deferred with <code>QTimer.singleShot(0)</code> so <code>setEdit()</code> can finish building its task dialog first.</div></div>
       <div class="n"><div class="k">inject</div><div>Finds the visible <code>Gui::TaskView::TaskPanel</code> widget and inserts a <code>NameBox</code> frame at index 0 of its <code>QBoxLayout</code>, above the dialog's first task box.</div></div>
       <div class="n"><div class="k">derive</div><div>If the label is still the default, it finds the feature's source through <code>Profile</code>, <code>Base</code> (dress-up features only) or <code>Originals</code>. If the source has a real name, it removes the source's postfix and adds the new feature's postfix, so <code>OutsideMoat_SKT</code> becomes <code>OutsideMoat_PAD</code>. If the feature has no source yet, the watchdog keeps checking until one is picked.</div></div>

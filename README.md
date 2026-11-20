@@ -11,6 +11,7 @@
 
 <p align="center">
   <a href="https://avongil.github.io/FreeCAD-FeatureNamer/"><b>Manual</b></a> ·
+  <a href="https://avongil.github.io/FreeCAD-FeatureNamer/how-it-works.html"><b>How it works</b></a> ·
   <a href="#install">Install</a> ·
   <a href="#settings">Settings</a> ·
   <a href="CHANGELOG.md">Changelog</a>
@@ -132,7 +133,7 @@ In FreeCAD, open *View > Panels > Python console* and type `App.getUserAppDataDi
 
 ## How it works
 
-FeatureNamer is pure Python and doesn't change any FreeCAD code. A Gui document observer notices when a Sketch or PartDesign feature enters edit mode, adds the Name field to the Tasks panel, and reads the feature's `Profile`, `Base` or `Originals` to work out its name. The [manual](https://avongil.github.io/FreeCAD-FeatureNamer/#how) has the details, the known limits, and a short proposal for adding this to FreeCAD itself.
+FeatureNamer is pure Python and doesn't change any FreeCAD code. A Gui document observer notices when a Sketch or PartDesign feature enters edit mode, adds the Name field to the Tasks panel, and reads the feature's `Profile`, `Base` or `Originals` to work out its name. The [manual](https://avongil.github.io/FreeCAD-FeatureNamer/#how) has the details, the known limits, and a short proposal for adding this to FreeCAD itself. Developers: [how it works](https://avongil.github.io/FreeCAD-FeatureNamer/how-it-works.html) walks through the edit lifecycle, naming rules and transactions.
 
 ## Development
 
